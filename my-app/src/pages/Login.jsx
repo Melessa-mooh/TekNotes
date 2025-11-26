@@ -1,18 +1,73 @@
-import { useNavigate } from "react-router-dom";
-import AuthForm from "../components/AuthForm";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import "../styles/auth.css";
 
 export default function Login() {
   const navigate = useNavigate();
 
-  const handleLogin = (data) => {
-    console.log("Login data:", data);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
 
-    alert("✅ Successfully logged in!");
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-    localStorage.setItem("userEmail", data.email);
+  const handleLogin = (e) => {
+    e.preventDefault();
+
+    alert("Successfully logged in! (UI only)");
 
     navigate("/dashboard");
   };
 
-  return <AuthForm mode="login" onSubmit={handleLogin} />;
+  return (
+    <div className="auth-page">
+      <div className="auth-card">
+        <h1 className="auth-logo">
+          <span className="logo-red">Tek</span>
+          <span className="logo-yellow">Notes</span>
+        </h1>
+
+        <p className="auth-subtitle">Welcome to Your Learning Hub</p>
+
+        <form onSubmit={handleLogin} className="auth-form">
+          {/* Email */}
+          <input
+            type="email"
+            name="email"
+            placeholder="Email address"
+            value={formData.email}
+            onChange={handleChange}
+            className="auth-input"
+            required
+          />
+
+          {/* Password */}
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={formData.password}
+            onChange={handleChange}
+            className="auth-input"
+            required
+          />
+
+          {/* Button */}
+          <button type="submit" className="auth-btn">
+            Sign In
+          </button>
+        </form>
+
+        <p className="auth-switch">
+          Don't have an account?{" "}
+          <Link to="/register" className="auth-link">
+            Sign Up
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
 }
