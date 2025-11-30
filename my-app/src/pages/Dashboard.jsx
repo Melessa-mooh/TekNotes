@@ -56,7 +56,6 @@ export default function Dashboard() {
       <Sidebar isOpen={isSidebarOpen} />
 
       <main className="main-content">
-        {/* Header */}
         <header className="header">
           <div className="header-left">
             <button className="menu-btn" onClick={() => setSidebarOpen(!isSidebarOpen)}>
@@ -64,7 +63,6 @@ export default function Dashboard() {
             </button>
             <div className="search-bar">
               <Search size={20} />
-              {/* ✅ UPDATED: Connected Input */}
               <input 
                 type="text" 
                 placeholder="Search notes, subjects, teachers..." 
