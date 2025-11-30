@@ -1,10 +1,11 @@
 import React from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate} from "react-router-dom";
 import {
   FileText,
   MessageCircle,
   Download,
   Bookmark,
+  LogOut,
   Settings,
   Home
 } from "lucide-react";
@@ -12,9 +13,15 @@ import "../styles/dashboard.css";
 
 export default function Sidebar({ isOpen }) {
   const location = useLocation();
+  const navigate = useNavigate();
 
-  // Helper to determine if link is active
+
   const isActive = (path) => location.pathname === path ? "nav-item active" : "nav-item";
+
+ const handleLogout = () => {
+    localStorage.removeItem("userFullName");
+    navigate("/login");
+  };
 
   return (
     <aside className={`sidebar ${isOpen ? "open" : ""}`}>
@@ -60,6 +67,25 @@ export default function Sidebar({ isOpen }) {
           <Settings size={18} />
           Settings
         </Link>
+
+        <button 
+          onClick={handleLogout} 
+          className="nav-item"
+          style={{ 
+            background: "transparent", 
+            border: "none", 
+            cursor: "pointer", 
+            width: "100%", 
+            textAlign: "left",
+            fontFamily: "inherit",
+            fontSize: "inherit",
+            color: "#dc2626"
+          }}
+        >
+          <LogOut size={18} />
+          Logout
+        </button>
+
       </div>
     </aside>
   );
