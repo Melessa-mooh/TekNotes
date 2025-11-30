@@ -20,68 +20,23 @@ import "../styles/materials.css";
 export default function Materials() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
 
-  // Default Mock Data (This shows if you haven't uploaded anything yet)
-  const defaultMaterials = [
-    { 
-      id: 1, 
-      title: "Math in Modern World - Methods of Data Collection", 
-      description: "Comprehensive notes covering arrays, linked lists, trees, and sorting algorithms with examples",
-      instructor: "Erica Dabalos", 
-      date: "10/25/25",
-      rating: 4.8,
-      downloadCount: 201,
-      uploadedBy: "Mavis"
-    },
-    { 
-      id: 2, 
-      title: "Physics - Quantum Mechanics", 
-      description: "Introduction to quantum theory and particle physics.",
-      instructor: "Dr. Sheldon",
-      date: "10/29/25",
-      rating: 4.9,
-      downloadCount: 150,
-      uploadedBy: "Mavis"
-    },
-    { 
-      id: 3, 
-      title: "Introduction to Algorithms", 
-      description: "Basics of algorithmic complexity and big O notation.",
-      instructor: "Prof. Cormen",
-      date: "11/02/25",
-      rating: 4.5,
-      downloadCount: 89,
-      uploadedBy: "Mavis"
-    },
-    { 
-      id: 4, 
-      title: "World History - The Renaissance", 
-      description: "Detailed overview of the cultural rebirth in Europe.",
-      instructor: "Ms. History",
-      date: "11/05/25",
-      rating: 4.7,
-      downloadCount: 120,
-      uploadedBy: "Mavis"
-    }
-  ];
-
-  // State to hold all materials (Default + Uploaded)
-  const [materials, setMaterials] = useState(defaultMaterials);
+  // State to hold all materials (Starts empty)
+  const [materials, setMaterials] = useState([]);
 
   // ✅ LOAD UPLOADED DATA AUTOMATICALLY
   useEffect(() => {
     // 1. Get uploaded notes from local storage (if any exist)
     const savedNotes = JSON.parse(localStorage.getItem("myMaterials")) || [];
     
-    // 2. Combine saved notes with default notes
-    // We put 'savedNotes' first so your newest upload appears at the top
-    setMaterials([...savedNotes, ...defaultMaterials]);
+    // 2. Set materials to saved notes
+    setMaterials(savedNotes);
   }, []);
 
   // Calculate dynamic stats based on actual data length
   const stats = [
     { label: "Total Notes", count: materials.length, icon: File, color: "gray" },
-    { label: "Download", count: 3, icon: Download, color: "gray" },
-    { label: "Published", count: 190, icon: CheckCircle, color: "gray" },
+    { label: "Download", count: 0, icon: Download, color: "gray" },
+    { label: "Published", count: materials.length, icon: CheckCircle, color: "gray" },
   ];
 
   return (
@@ -146,59 +101,65 @@ export default function Materials() {
 
           {/* 3. Materials Grid */}
           <div className="materials-grid">
-            {materials.map((item) => (
-              <div key={item.id} className="material-card">
-                
-                {/* File Icon + Title Block */}
-                <div className="card-top">
-                  <div className="file-icon-red">
-                    <FileText size={24} />
-                  </div>
-                  <div className="card-header-text">
-                    <h4>{item.title}</h4>
-                    <p className="card-desc">{item.description}</p>
-                  </div>
-                </div>
-
-                {/* Instructor & Date Row */}
-                <div className="card-meta-row">
-                  <div className="author-info">
-                    <User size={14} />
-                    <span>{item.instructor}</span>
-                    <span className="dot">🗓️</span>
-                    <span>{item.date}</span>
-                  </div>
-                  <div className="stats-info">
-                    <span className="rating-badge">
-                      <Star size={12} fill="#fbbf24" stroke="none" />
-                      {item.rating || "New"}
-                    </span>
-                    <span className="download-count">
-                      <Download size={12} />
-                      {item.downloadCount}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Footer Actions */}
-                <div className="card-footer">
-                  <div className="uploader-info">
-                    <div className="uploader-avatar">
-                       {/* Simple avatar placeholder */}
-                       <div style={{width: '100%', height:'100%', background: '#ccc'}}></div>
+            {materials.length > 0 ? (
+              materials.map((item) => (
+                <div key={item.id} className="material-card">
+                  
+                  {/* File Icon + Title Block */}
+                  <div className="card-top">
+                    <div className="file-icon-red">
+                      <FileText size={24} />
                     </div>
-                    <span>Uploaded by {item.uploadedBy}</span>
+                    <div className="card-header-text">
+                      <h4>{item.title}</h4>
+                      <p className="card-desc">{item.description}</p>
+                    </div>
                   </div>
-                  <div className="card-buttons">
-                    <button className="preview-btn">Preview</button>
-                    <button className="download-action-btn">
-                      <Download size={14} /> Downloads
-                    </button>
-                  </div>
-                </div>
 
+                  {/* Instructor & Date Row */}
+                  <div className="card-meta-row">
+                    <div className="author-info">
+                      <User size={14} />
+                      <span>{item.instructor}</span>
+                      <span className="dot">🗓️</span>
+                      <span>{item.date}</span>
+                    </div>
+                    <div className="stats-info">
+                      <span className="rating-badge">
+                        <Star size={12} fill="#fbbf24" stroke="none" />
+                        {item.rating || "New"}
+                      </span>
+                      <span className="download-count">
+                        <Download size={12} />
+                        {item.downloadCount}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Footer Actions */}
+                  <div className="card-footer">
+                    <div className="uploader-info">
+                      <div className="uploader-avatar">
+                        {/* Simple avatar placeholder */}
+                        <div style={{width: '100%', height:'100%', background: '#ccc'}}></div>
+                      </div>
+                      <span>Uploaded by {item.uploadedBy}</span>
+                    </div>
+                    <div className="card-buttons">
+                      <button className="preview-btn">Preview</button>
+                      <button className="download-action-btn">
+                        <Download size={14} /> Downloads
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
+              ))
+            ) : (
+              <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "40px", color: "#64748b" }}>
+                <p>No materials found. Upload your first note!</p>
               </div>
-            ))}
+            )}
           </div>
 
         </div>
