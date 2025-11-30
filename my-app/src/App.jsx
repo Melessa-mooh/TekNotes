@@ -10,6 +10,7 @@ import Settings from "./pages/Settings";
 import Uploads from "./pages/Uploads"; // ✅ Import the new page
 import Downloads from "./pages/Downloads"; // Import the new page
 import Materials from "./pages/Materials"; // ✅ Import Materials
+import SearchResources from "./pages/SearchResources"; // Import
 import ProfileSettings from "./pages/profileSettings";
 
 
@@ -25,6 +26,7 @@ export default function App() {
         <Route path="/bookmarks" element={<Bookmarks />} />
         <Route path="/reviews" element={<Reviews />} />
          <Route path="/uploads" element={<Uploads />} /> {/* ✅ Add the route */}
+         <Route path="/search" element={<SearchResources />} />
          <Route path="/materials" element={<Materials />} />
          <Route path="/downloads" element={<Downloads />} />
          <Route path="/settings" element={<Settings />} />

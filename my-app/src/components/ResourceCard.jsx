@@ -1,12 +1,11 @@
 import React from "react";
-import { FileText, MoreVertical, Bookmark, Download } from "lucide-react";
+import { FileText, MoreVertical, Bookmark, Download, Star } from "lucide-react";
 
 export default function ResourceCard({ data }) {
-  // Helper to render stars dynamically
   const renderStars = (rating) => {
     return [...Array(5)].map((_, i) => (
       <span key={i} className={`star ${i < Math.floor(rating) ? "filled" : i < rating ? "half" : ""}`}>
-        ⭐
+        <Star size={12} fill={i < rating ? "#fbbf24" : "none"} stroke={i < rating ? "#fbbf24" : "currentColor"} />
       </span>
     ));
   };
@@ -31,7 +30,7 @@ export default function ResourceCard({ data }) {
           <div className="rating">
             {renderStars(data.rating)}
             <span>
-              {data.rating} ({data.reviews})
+              {data.rating} ({data.reviews || 0})
             </span>
           </div>
         </div>
@@ -47,7 +46,7 @@ export default function ResourceCard({ data }) {
         </button>
         <button className="download-btn">
           <Download size={18} />
-          {data.downloads || "Get"}
+          {data.downloads || 0}
         </button>
       </div>
     </div>

@@ -8,18 +8,15 @@ import {
   Settings,
   Home
 } from "lucide-react";
-import "../styles/dashboard.css"; // We can reuse the existing styles
+import "../styles/dashboard.css";
 
 export default function Sidebar({ isOpen }) {
   const location = useLocation();
 
-  // specific helper to check if the link is active
-  const isActive = (path) => {
-    return location.pathname === path ? "nav-item active" : "nav-item";
-  };
+  // Helper to determine if link is active
+  const isActive = (path) => location.pathname === path ? "nav-item active" : "nav-item";
 
   return (
-    // The 'open' class allows you to toggle it on mobile if needed
     <aside className={`sidebar ${isOpen ? "open" : ""}`}>
       <div className="logo-section">
         <div className="logo-icon">📚</div>
@@ -59,7 +56,7 @@ export default function Sidebar({ isOpen }) {
       </nav>
 
       <div className="sidebar-footer">
-        <Link to="/settings" className="settings-link">
+        <Link to="/settings" className={isActive("/settings") + " settings-link"}>
           <Settings size={18} />
           Settings
         </Link>

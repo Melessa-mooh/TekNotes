@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom"; // ✅ Added useNavigate
+import { Link, useNavigate } from "react-router-dom"; 
 import "../styles/dashboard.css"; 
 
 // Icons
@@ -12,7 +12,11 @@ import ResourceCard from "../components/ResourceCard";
 export default function Dashboard() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [fullName, setFullName] = useState("");
-  const navigate = useNavigate(); // ✅ Initialize hook
+  
+  // ✅ NEW: Search State
+  const [searchTerm, setSearchTerm] = useState("");
+  
+  const navigate = useNavigate(); 
 
   // Stats Data
   const [stats] = useState([
@@ -39,6 +43,14 @@ export default function Dashboard() {
     if (name) setFullName(name);
   }, []);
 
+  // ✅ NEW: Handle Search Logic
+  const handleSearch = (e) => {
+    if (e.key === 'Enter' && searchTerm.trim()) {
+      // Navigate to search page and pass the query
+      navigate('/search', { state: { query: searchTerm } });
+    }
+  };
+
   return (
     <div className="dashboard-container">
       <Sidebar isOpen={isSidebarOpen} />
@@ -52,11 +64,17 @@ export default function Dashboard() {
             </button>
             <div className="search-bar">
               <Search size={20} />
-              <input type="text" placeholder="Search notes, subjects, teachers..." />
+              {/* ✅ UPDATED: Connected Input */}
+              <input 
+                type="text" 
+                placeholder="Search notes, subjects, teachers..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onKeyDown={handleSearch}
+              />
             </div>
           </div>
           <div className="header-right">
-            {/* ✅ Added onClick handler */}
             <button className="upload-btn" onClick={() => navigate('/uploads')}>
               <Upload size={18} /> Upload
             </button>

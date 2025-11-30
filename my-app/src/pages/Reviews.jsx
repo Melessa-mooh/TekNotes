@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Search, 
   Upload, 
@@ -8,58 +8,49 @@ import {
   MessageCircle, 
   ThumbsUp, 
   Star,
-  Edit2,     // For the pencil icon
-  Trash2,    // For the delete/trash icon
-  MessageSquare // For the comment icon
+  Edit2, 
+  Trash2, 
+  MessageSquare
 } from "lucide-react";
 
-// Shared Components
 import Sidebar from "../components/Sidebar";
-
-// Styles
 import "../styles/dashboard.css"; 
 import "../styles/reviews.css";   
 
 export default function Reviews() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
 
-  // Stats Data
-  const stats = [
-    { label: "Reviews Written", count: 4, icon: MessageCircle, color: "red" },
-    { label: "Avg Rating", count: 4.3, icon: Star, color: "yellow" },
-    { label: "Likes Received", count: 3, icon: ThumbsUp, color: "green" },
-  ];
+  // State to hold the reviews (Starts empty)
+  const [reviews, setReviews] = useState([]);
 
-  // Review Data matching your screenshot
-  const [reviews] = useState([
-    { 
-      id: 1, 
-      title: "Data Structures - Binary Trees", 
-      content: "Excellent comprehensive guide! The examples are clear and the explanations really helped me understand complex algorithms. Highly recommended for CS students.",
-      rating: 4, 
-      likes: 12, 
-      comments: 8,
-      isMyReview: true 
-    },
-    { 
-      id: 2, 
-      title: "Calculus II - Integration Techniques", 
-      content: "The step-by-step breakdown of integration by parts was a lifesaver. However, I wish there were more practice problems included at the end of the chapter.",
-      rating: 4, 
-      likes: 12, 
-      comments: 8,
-      isMyReview: true 
-    },
-    { 
-      id: 3, 
-      title: "World History - Renaissance Era", 
-      content: "Great summary of the key events. The timeline visualization was particularly helpful for memorizing dates for the final exam.",
-      rating: 4, 
-      likes: 12, 
-      comments: 8,
-      isMyReview: true 
-    },
-  ]);
+  // ✅ 2. Load Data from LocalStorage
+  useEffect(() => {
+    const savedReviews = JSON.parse(localStorage.getItem("myReviews")) || [];
+    setReviews(savedReviews);
+  }, []);
+
+  // ✅ 3. Delete Functionality
+  const handleDelete = (id) => {
+    if (window.confirm("Delete this review?")) {
+      const updatedReviews = reviews.filter((r) => r.id !== id);
+      setReviews(updatedReviews);
+      // Update storage so it stays deleted
+      localStorage.setItem("myReviews", JSON.stringify(updatedReviews));
+    }
+  };
+
+  // ✅ 4. Calculate Stats Dynamically based on 'reviews' state
+  const totalReviews = reviews.length;
+  const totalLikes = reviews.reduce((sum, item) => sum + (item.likes || 0), 0);
+  const avgRating = totalReviews > 0 
+    ? (reviews.reduce((sum, item) => sum + item.rating, 0) / totalReviews).toFixed(1) 
+    : 0;
+
+  const stats = [
+    { label: "Reviews Written", count: totalReviews, icon: MessageCircle, color: "red" },
+    { label: "Avg Rating", count: avgRating, icon: Star, color: "yellow" },
+    { label: "Likes Received", count: totalLikes, icon: ThumbsUp, color: "green" },
+  ];
 
   // Helper to render stars
   const renderStars = (count) => {
@@ -79,7 +70,6 @@ export default function Reviews() {
       <Sidebar isOpen={isSidebarOpen} />
 
       <main className="main-content">
-        {/* Header */}
         <header className="header">
           <div className="header-left">
             <button className="menu-btn" onClick={() => setSidebarOpen(!isSidebarOpen)}>
@@ -96,7 +86,7 @@ export default function Reviews() {
 
         <div className="reviews-container">
           
-          {/* 1. Stats Row */}
+          {/* Dynamic Stats Row */}
           <div className="stats-row">
             {stats.map((stat, index) => {
               const Icon = stat.icon;
@@ -114,7 +104,7 @@ export default function Reviews() {
             })}
           </div>
 
-          {/* 2. Filter Bar */}
+          {/* Filter Bar */}
           <div className="filter-bar-container">
             <div className="search-wrapper">
               <Search size={20} className="search-icon" />
@@ -134,45 +124,49 @@ export default function Reviews() {
             </div>
           </div>
 
-          {/* 3. Reviews List (Custom Cards) */}
+          {/* Reviews List */}
           <div className="reviews-list">
-            {reviews.map((review) => (
-              <div key={review.id} className="review-card">
-                
-                {/* Card Header: Title + Badge + Actions */}
-                <div className="review-card-header">
-                  <div className="header-content">
-                    <h4>{review.title}</h4>
-                    {review.isMyReview && <span className="my-review-badge">My Reviews</span>}
+            {reviews.length > 0 ? (
+              reviews.map((review) => (
+                <div key={review.id} className="review-card">
+                  
+                  <div className="review-card-header">
+                    <div className="header-content">
+                      <h4>{review.title}</h4>
+                      {review.isMyReview && <span className="my-review-badge">My Reviews</span>}
+                    </div>
+                    <div className="card-actions">
+                      <button className="action-btn edit"><Edit2 size={18} /></button>
+                      <button className="action-btn delete" onClick={() => handleDelete(review.id)}>
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
                   </div>
-                  <div className="card-actions">
-                    <button className="action-btn edit"><Edit2 size={18} /></button>
-                    <button className="action-btn delete"><Trash2 size={18} /></button>
+
+                  <div className="review-stars">
+                    {renderStars(review.rating)}
                   </div>
+
+                  <p className="review-text">{review.content}</p>
+
+                  <div className="review-footer">
+                    <div className="engagement-item">
+                      <ThumbsUp size={18} />
+                      <span>{review.likes}</span>
+                    </div>
+                    <div className="engagement-item">
+                      <MessageSquare size={18} />
+                      <span>{review.comments}</span>
+                    </div>
+                  </div>
+
                 </div>
-
-                {/* Rating Stars */}
-                <div className="review-stars">
-                  {renderStars(review.rating)}
-                </div>
-
-                {/* Text Content */}
-                <p className="review-text">{review.content}</p>
-
-                {/* Footer: Likes & Comments */}
-                <div className="review-footer">
-                  <div className="engagement-item">
-                    <ThumbsUp size={18} />
-                    <span>{review.likes}</span>
-                  </div>
-                  <div className="engagement-item">
-                    <MessageSquare size={18} />
-                    <span>{review.comments}</span>
-                  </div>
-                </div>
-
+              ))
+            ) : (
+              <div style={{textAlign: "center", color: "#888", marginTop: "40px"}}>
+                <p>No reviews yet. Go to Search Resources to add one!</p>
               </div>
-            ))}
+            )}
           </div>
 
         </div>
