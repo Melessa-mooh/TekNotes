@@ -1,0 +1,251 @@
+/* Container */
+.downloads-container {
+  padding: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* --- 1. Stats Row --- */
+.stat-card-download {
+  flex: 1;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.stat-icon-square {
+  width: 48px;
+  height: 48px;
+  border-radius: 10px; /* Slightly squarer than reviews */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-icon-square.red { background: #fff1f2; color: #be123c; }
+.stat-icon-square.yellow { background: #fefce8; color: #a16207; }
+.stat-icon-square.green { background: #f0fdf4; color: #15803d; }
+
+.stat-info-download h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+
+.stat-info-download p {
+  font-size: 13px;
+  color: #64748b;
+  margin: 4px 0 0 0;
+}
+
+/* --- 2. Toolbar --- */
+.downloads-toolbar {
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  background: white; /* Optional: if you want the whole bar white like search */
+  padding: 10px 0;
+}
+
+.search-bar-download {
+  flex: 1;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.search-bar-download input {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 14px;
+}
+
+.toolbar-right {
+  display: flex;
+  gap: 12px;
+}
+
+.subject-select {
+  padding: 10px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: white;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.my-downloads-btn {
+  background: #5C0000;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* --- 3. Grid Layout --- */
+.downloads-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); /* Wide cards */
+  gap: 20px;
+}
+
+.download-card-large {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Card Content */
+.card-top {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.file-icon-red {
+  background: #fff1f2;
+  color: #be123c;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.card-header-text h4 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 6px 0;
+}
+
+.card-desc {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Meta Info Row */
+.card-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: #94a3b8;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.author-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.stats-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.rating-badge, .download-count {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  color: #64748b;
+}
+
+/* Footer */
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 4px;
+}
+
+.uploader-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: #64748b;
+}
+
+.uploader-avatar {
+  width: 24px;
+  height: 24px;
+  background: #e2e8f0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #475569;
+}
+
+.card-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.preview-btn {
+  background: white;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.download-action-btn {
+  background: #5C0000;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .downloads-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .downloads-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .card-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  
+  .card-buttons {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
