@@ -1,11 +1,11 @@
-/* Container */
+
 .downloads-container {
   padding: 30px;
   max-width: 1200px;
   margin: 0 auto;
 }
 
-/* --- 1. Stats Row --- */
+
 .stat-card-download {
   flex: 1;
   background: white;
@@ -21,7 +21,7 @@
 .stat-icon-square {
   width: 48px;
   height: 48px;
-  border-radius: 10px; /* Slightly squarer than reviews */
+  border-radius: 10px; 
   display: flex;
   align-items: center;
   justify-content: center;
@@ -44,15 +44,14 @@
   margin: 4px 0 0 0;
 }
 
-/* --- 2. Toolbar --- */
+
 .downloads-toolbar {
   margin-bottom: 24px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 16px;
-  background: white; /* Optional: if you want the whole bar white like search */
-  padding: 10px 0;
+  background: white; 
 }
 
 .search-bar-download {
@@ -97,7 +96,7 @@
   font-size: 14px;
 }
 
-/* --- 3. Grid Layout --- */
+
 .downloads-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); /* Wide cards */
@@ -114,7 +113,7 @@
   gap: 16px;
 }
 
-/* Card Content */
+
 .card-top {
   display: flex;
   gap: 16px;
@@ -123,7 +122,7 @@
 
 .file-icon-red {
   background: #fff1f2;
-  color: #be123c;
+  color: #89220b;
   padding: 10px;
   border-radius: 8px;
 }
@@ -142,7 +141,7 @@
   margin: 0;
 }
 
-/* Meta Info Row */
+
 .card-meta-row {
   display: flex;
   justify-content: space-between;
@@ -172,7 +171,7 @@
   color: #64748b;
 }
 
-/* Footer */
+
 .card-footer {
   display: flex;
   justify-content: space-between;

@@ -23,12 +23,11 @@ export default function Materials() {
   // State to hold all materials (Starts empty)
   const [materials, setMaterials] = useState([]);
 
-  // ✅ LOAD UPLOADED DATA AUTOMATICALLY
+ 
   useEffect(() => {
-    // 1. Get uploaded notes from local storage (if any exist)
     const savedNotes = JSON.parse(localStorage.getItem("myMaterials")) || [];
     
-    // 2. Set materials to saved notes
+    
     setMaterials(savedNotes);
   }, []);
 
@@ -56,7 +55,7 @@ export default function Materials() {
             </div>
           </div>
           <div className="header-right">
-            {/* Link to Upload Page */}
+           
             <Link to="/uploads">
                 <button className="upload-btn-primary">
                 <Upload size={18} /> Upload
@@ -69,7 +68,7 @@ export default function Materials() {
 
         <div className="materials-container">
           
-          {/* 1. Stats Row */}
+         
           <div className="materials-stats-row">
             {stats.map((stat, index) => (
               <div className="material-stat-card" key={index}>
@@ -105,7 +104,7 @@ export default function Materials() {
               materials.map((item) => (
                 <div key={item.id} className="material-card">
                   
-                  {/* File Icon + Title Block */}
+                
                   <div className="card-top">
                     <div className="file-icon-red">
                       <FileText size={24} />
@@ -116,7 +115,7 @@ export default function Materials() {
                     </div>
                   </div>
 
-                  {/* Instructor & Date Row */}
+                
                   <div className="card-meta-row">
                     <div className="author-info">
                       <User size={14} />
