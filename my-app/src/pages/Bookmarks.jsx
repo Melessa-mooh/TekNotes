@@ -1,339 +1,169 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";   // ✅ ADDED useNavigate
-import "../styles/dashboard.css";
+import React, { useState } from "react";
+import { Menu, FileText, Star, BookOpen, Clock } from "lucide-react";
 
-import {
-  Search,
-  Upload,
-  Bell,
-  User,
-  Menu,
-  Bookmark,
-  Users,
-  TrendingUp,
-  FileText,
-  MoreVertical,
-  MessageCircle,
-  Download
-} from "lucide-react";
+// Components
+import Sidebar from "../components/Sidebar";
 
-export default function Dashboard() {
-  const navigate = useNavigate();   // ✅ REQUIRED FOR BUTTON REDIRECT
+// Styles
+import "../styles/bookmarks.css"; // Make sure your CSS is saved here
+import "../styles/dashboard.css"; // We still need this for the main layout wrapper
 
-  const [stats] = useState({
-    uploadedNotes: { count: 24, change: "+3 this week" },
-    bookmarked: { count: 156, change: "+12 this week" },
-    studyGroups: { count: 8, change: "2 active now" },
-    totalDownloads: { count: "2.4K", change: "+18% this month" },
-  });
+export default function Bookmarks() {
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedSubject, setSelectedSubject] = useState("All");
 
-  const [recentUploads] = useState([
+  // Mock Data matching your card structure
+  const [bookmarks] = useState([
     {
       id: 1,
       title: "Data Structures - Binary Trees",
       subject: "Computer Science",
       professor: "Prof. Anderson",
       fileType: "PDF",
-      uploadTime: "2 hours ago",
-      rating: 4.5,
-      reviews: 23,
-      downloads: 45,
+      rating: 4.8,
+      date: "2 days ago"
     },
     {
       id: 2,
-      title: "Calculus II - Integration Techniques",
+      title: "Calculus II - Integration",
       subject: "Mathematics",
       professor: "Dr. Martinez",
       fileType: "PPT",
-      uploadTime: "5 hours ago",
-      rating: 4.8,
-      reviews: 42,
-      downloads: 78,
+      rating: 4.5,
+      date: "1 week ago"
     },
     {
       id: 3,
-      title: "World History - Renaissance Era",
+      title: "European History Notes",
       subject: "History",
       professor: "Prof. Chen",
       fileType: "DOCX",
-      uploadTime: "1 day ago",
       rating: 4.2,
-      reviews: 18,
-      downloads: 34,
+      date: "3 hours ago"
+    },
+    {
+      id: 4,
+      title: "Physics - Quantum Mechanics",
+      subject: "Physics",
+      professor: "Dr. Richard",
+      fileType: "PDF",
+      rating: 4.9,
+      date: "1 day ago"
     },
   ]);
 
-  const [studyGroups] = useState([
-    {
-      id: 1,
-      name: "CS301 Study Group",
-      description: "Algorithms & Data Structures",
-      avatar: "CS",
-      members: 24,
-      lastActive: "15 min ago",
-      color: "bg-blue-500",
-      unread: 5,
-    },
-    {
-      id: 2,
-      name: "Calculus Warriors",
-      description: "Advanced Calculus",
-      avatar: "CA",
-      members: 18,
-      lastActive: "2 hours ago",
-      color: "bg-indigo-500",
-      unread: 0,
-    },
-    {
-      id: 3,
-      name: "Physics Lab Partners",
-      description: "Quantum Physics",
-      avatar: "PH",
-      members: 12,
-      lastActive: "1 hour ago",
-      color: "bg-purple-500",
-      unread: 3,
-    },
-  ]);
-
-  const [fullName, setFullName] = useState("");
-
-  useEffect(() => {
-    const name = localStorage.getItem("userFullName");
-    if (name) setFullName(name);
-  }, []);
-
-  const renderStars = (rating) => {
-    return [...Array(5)].map((_, i) => (
-      <span
-        key={i}
-        className={`star ${
-          i < Math.floor(rating) ? "filled" : i < rating ? "half" : ""
-        }`}
-      >
-        ⭐
-      </span>
-    ));
-  };
+  // Filter Logic
+  const filteredBookmarks = bookmarks.filter((item) => {
+    const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSubject = selectedSubject === "All" || item.subject === selectedSubject;
+    return matchesSearch && matchesSubject;
+  });
 
   return (
     <div className="dashboard-container">
-      {/* Sidebar */}
-      <aside className="sidebar">
-        <div className="logo-section">
-          <div className="logo-icon">📚</div>
-          <div className="logo-text">
-            <h1>TekNotes</h1>
-            <p>Academic Resources</p>
-          </div>
-        </div>
+      {/* Reusing the Sidebar */}
+      <Sidebar isOpen={isSidebarOpen} />
 
-        <nav className="nav-section">
-          <h3 className="nav-title">Navigation</h3>
-
-          <Link to="/dashboard" className="nav-item active">
-            <span className="nav-icon">🏠</span>
-            Dashboard
-          </Link>
-
-          <Link to="/materials" className="nav-item">
-            <FileText size={18} />
-            My Materials
-          </Link>
-          <Link to="/reviews" className="nav-item">
-          <MessageCircle size={18} />
-            Reviews
-            </Link>
-            <Link to="/downloads" className="nav-item"> 
-             <Download size={18} /> 
-             Downloads
-            </Link>
-
-          
-
-          {/* ✅ BOOKMARKS LINK FIXED */}
-          <Link to="/bookmarks" className="nav-item">
-            <Bookmark size={18} />
-            Bookmarks
-          </Link>
-
-          
-        </nav>
-
-        <div className="sidebar-footer">
-          <Link to="/settings" className="settings-link">
-            ⚙️ Settings
-          </Link>
-        </div>
-      </aside>
-
-      {/* Main Content */}
+      {/* Main Layout Area */}
       <main className="main-content">
-        {/* Header */}
-        <header className="header">
-          <div className="header-left">
-            <button className="menu-btn">
-              <Menu size={24} />
-            </button>
+        
+        {/* Mobile Menu Button (Hidden on Desktop via dashboard.css) */}
+        <button 
+          className="menu-btn" 
+          onClick={() => setSidebarOpen(!isSidebarOpen)}
+          style={{ margin: "20px 0 0 20px" }} // distinct styling for this page
+        >
+          <Menu size={24} />
+        </button>
 
-            <div className="search-bar">
-              <Search size={20} />
-              <input
-                type="text"
-                placeholder="Search notes, subjects, teachers..."
-              />
-            </div>
+        {/* YOUR CSS STRUCTURE STARTS HERE */}
+        <div className="bookmarks-container">
+          
+          {/* HEADER */}
+          <div className="top-header">
+            <h1>My Bookmarks</h1>
+            <p>Access and manage your saved academic resources.</p>
           </div>
 
-          <div className="header-right">
-            <button className="upload-btn">
-              <Upload size={18} />
-              Upload
-            </button>
-            <button className="icon-btn">
-              <Bell size={20} />
-            </button>
-            <button className="icon-btn">
-              <User size={20} />
-            </button>
-          </div>
-        </header>
-
-        {/* Welcome Section */}
-        <div className="welcome-section">
-          <h2>Welcome back, {fullName || "Student"}!</h2>
-          <p>Here's what’s happening with your academic resources today.</p>
-        </div>
-
-        {/* Stats Grid */}
-        <div className="stats-grid">
-          {Object.entries(stats).map(([key, value], index) => (
-            <div className="stat-card" key={index}>
-              <div className="stat-header">
-                <span className="stat-label">
-                  {key.replace(/([A-Z])/g, " $1").trim()}
-                </span>
-                <div className={`stat-icon`}>
-                  {(() => {
-                    const icons = [FileText, Bookmark, Users, TrendingUp];
-                    const Icon = icons[index];
-                    return <Icon size={24} />;
-                  })()}
-                </div>
+          {/* STATS */}
+          <div className="stats-row">
+            <div className="stats-card">
+              <div className="stat-icon">
+                <BookOpen size={20} style={{ margin: "7px", color: "#555" }} />
               </div>
-
-              <div className="stat-number">{value.count}</div>
-              <div className="stat-change positive">{value.change}</div>
+              <div>
+                <h2>{bookmarks.length}</h2>
+                <span style={{ fontSize: "12px", color: "#777" }}>Total Saved</span>
+              </div>
             </div>
-          ))}
-        </div>
-
-        {/* Content Grid */}
-        <div className="content-grid">
-          {/* Recent Uploads */}
-          <section className="content-section">
-            <div className="section-header">
-              <h3>Recent Uploads</h3>
-              <Link to="/uploads" className="view-all">
-                View all
-              </Link>
+            
+            <div className="stats-card">
+              <div className="stat-icon">
+                <Clock size={20} style={{ margin: "7px", color: "#555" }} />
+              </div>
+              <div>
+                <h2>12</h2>
+                <span style={{ fontSize: "12px", color: "#777" }}>Read Later</span>
+              </div>
             </div>
+          </div>
 
-            <div className="uploads-list">
-              {recentUploads.map((upload) => (
-                <div key={upload.id} className="upload-card">
+          {/* SEARCH ROW */}
+          <div className="search-filter-row">
+            <input 
+              type="text" 
+              className="search-bar" 
+              placeholder="Search by title..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            
+            <select 
+              className="subjects-dropdown"
+              value={selectedSubject}
+              onChange={(e) => setSelectedSubject(e.target.value)}
+            >
+              <option value="All">All Subjects</option>
+              <option value="Computer Science">Computer Science</option>
+              <option value="Mathematics">Mathematics</option>
+              <option value="History">History</option>
+              <option value="Physics">Physics</option>
+            </select>
 
-                  <div className="upload-icon">
-                    <FileText size={24} />
+            <button className="my-bookmarks-btn">
+              My List
+            </button>
+          </div>
+
+          {/* CARDS GRID */}
+          <div className="cards-grid">
+            {filteredBookmarks.length > 0 ? (
+              filteredBookmarks.map((item) => (
+                <div key={item.id} className="bookmark-card">
+                  <div className="bookmark-icon">
+                    <FileText />
                   </div>
-
-                  <div className="upload-content">
-                    <h4>{upload.title}</h4>
-                    <p className="upload-meta">
-                      {upload.subject} • {upload.professor}
-                    </p>
-
-                    <div className="upload-footer">
-                      <span className="file-type">{upload.fileType}</span>
-                      <span className="upload-time">{upload.uploadTime}</span>
-
-                      <div className="rating">
-                        {renderStars(upload.rating)}
-                        <span>
-                          {upload.rating} ({upload.reviews})
-                        </span>
-                      </div>
+                  
+                  <div className="card-content" style={{ flex: 1 }}>
+                    <h3>{item.title}</h3>
+                    <p>{item.subject} • {item.professor}</p>
+                    
+                    <div className="card-meta">
+                      <span className="file-type">{item.fileType}</span>
+                      <span className="rating">⭐ {item.rating}</span>
+                      <span style={{ marginLeft: "auto" }}>{item.date}</span>
                     </div>
-                  </div>
-
-                  <div className="upload-actions">
-
-                    <button className="more-btn">
-                      <MoreVertical size={20} />
-                    </button>
-
-                    {/* ⭐ FIXED: SAVE → GO TO BOOKMARKS */}
-                    <button
-                      className="save-btn"
-                      onClick={() => navigate("/bookmarks")}
-                    >
-                      <Bookmark size={18} />
-                      Save
-                    </button>
-
-                    <button className="download-btn">
-                      <Download size={18} />
-                      {upload.downloads}
-                    </button>
                   </div>
                 </div>
-              ))}
-            </div>
-          </section>
+              ))
+            ) : (
+              <p style={{ color: "#777", gridColumn: "span 2", textAlign: "center" }}>
+                No bookmarks found matching your search.
+              </p>
+            )}
+          </div>
 
-          {/* Study Groups */}
-          <section className="content-section groups-section">
-            <div className="section-header">
-              <h3>My Study Groups</h3>
-              <Link to="/groups" className="view-all">
-                View all
-              </Link>
-            </div>
-
-            <div className="groups-list">
-              {studyGroups.map((group) => (
-                <div key={group.id} className="group-card">
-                  <div className="group-header">
-                    <div className={`group-avatar ${group.color}`}>
-                      {group.avatar}
-                    </div>
-
-                    <div className="group-info">
-                      <h4>{group.name}</h4>
-                      <p>{group.description}</p>
-                      <div className="group-meta">
-                        <Users size={14} />
-                        <span>{group.members} members</span>
-                      </div>
-                    </div>
-
-                    {group.unread > 0 && (
-                      <div className="unread-badge">{group.unread}</div>
-                    )}
-                  </div>
-
-                  <div className="group-footer">
-                    <span className="last-active">{group.lastActive}</span>
-                    <button className="chat-btn">
-                      <MessageCircle size={16} />
-                      Open Chat
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-          </section>
         </div>
       </main>
     </div>
