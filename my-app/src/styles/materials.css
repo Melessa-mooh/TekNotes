@@ -1,11 +1,11 @@
-/* Container */
+
 .materials-container {
   padding: 30px;
   max-width: 1200px;
   margin: 0 auto;
 }
 
-/* --- 1. Stats Row --- */
+
 .materials-stats-row {
   display: flex;
   gap: 20px;
@@ -39,7 +39,7 @@
   margin: 0;
 }
 
-/* --- 2. Toolbar --- */
+
 .materials-toolbar {
   margin-bottom: 24px;
   display: flex;
@@ -85,7 +85,7 @@
 }
 
 .my-notes-btn {
-  background: #5C0000; /* Dark Red */
+  background: #5C0000; 
   color: white;
   border: none;
   padding: 10px 24px;
@@ -95,7 +95,7 @@
   font-weight: 500;
 }
 
-/* --- 3. Grid Layout --- */
+
 .materials-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
@@ -118,7 +118,7 @@
   box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
 }
 
-/* Card Content */
+
 .card-top {
   display: flex;
   gap: 16px;
@@ -126,8 +126,8 @@
 }
 
 .file-icon-red {
-  background: #fff1f2;
-  color: #be123c;
+  background:linear-gradient(135deg, #8B0000 0%, #5C0000 100%);;
+  color: #f8f9fc;
   padding: 10px;
   border-radius: 8px;
   display: flex;
@@ -150,7 +150,7 @@
   margin: 0;
 }
 
-/* Meta Row */
+
 .card-meta-row {
   display: flex;
   justify-content: space-between;
@@ -186,7 +186,7 @@
   font-weight: 500;
 }
 
-/* Footer */
+
 .card-footer {
   display: flex;
   justify-content: space-between;
@@ -245,7 +245,7 @@
   font-weight: 500;
 }
 
-/* Responsive */
+
 @media (max-width: 768px) {
   .materials-stats-row {
     flex-direction: column;
