@@ -35,7 +35,16 @@ export default function Login() {
       }
 
       const user = await res.json();
-      // Optional: store user in localStorage
+
+      // Make sure we have an id/userId (coming from MySQL via backend)
+      const userId = user.id ?? user.userId;
+      if (!userId) {
+        console.error("Login response missing user id:", user);
+        alert("Login response invalid.");
+        return;
+      }
+
+      // Store full user object for later (Dashboard will read id from here)
       localStorage.setItem("teknotesUser", JSON.stringify(user));
 
       alert("Successfully logged in!");
