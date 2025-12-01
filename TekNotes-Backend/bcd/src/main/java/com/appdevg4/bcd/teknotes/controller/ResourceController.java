@@ -2,43 +2,54 @@ package com.appdevg4.bcd.teknotes.controller;
 
 import com.appdevg4.bcd.teknotes.entity.Resource;
 import com.appdevg4.bcd.teknotes.service.ResourceService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/resources")
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:3000")
 public class ResourceController {
 
-    private final ResourceService service;
+    private final ResourceService resourceService;
 
-    public ResourceController(ResourceService service) {
-        this.service = service;
+    public ResourceController(ResourceService resourceService) {
+        this.resourceService = resourceService;
     }
 
-    @PostMapping
-    public Resource create(@RequestBody Resource resource) {
-        return service.create(resource);
-    }
+    @PostMapping("/upload")
+    public ResponseEntity<Resource> uploadResource(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("title") String title,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "courseName", required = false) String courseName,
+            @RequestParam(value = "courseCode", required = false) String courseCode,
+            @RequestParam(value = "teacherName", required = false) String teacherName,
+            @RequestParam(value = "tags", required = false) String tags,
+            @RequestParam("userId") Integer userId
+    ) {
+        try {
+            Resource saved = resourceService.uploadResource(
+                    file,
+                    title,
+                    description,
+                    courseName,
+                    courseCode,
+                    teacherName,
+                    tags,
+                    userId
+            );
 
-    @GetMapping
-    public List<Resource> getAll() {
-        return service.findAll();
-    }
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body(saved);
 
-    @GetMapping("/{id}")
-    public Resource getById(@PathVariable Integer id) {
-        return service.findById(id);
-    }
-
-    @PutMapping("/{id}")
-    public Resource update(@PathVariable Integer id, @RequestBody Resource resource) {
-        return service.update(id, resource);
-    }
-
-    @DeleteMapping("/{id}")
-    public void delete(@PathVariable Integer id) {
-        service.delete(id);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .build();
+        }
     }
 }
