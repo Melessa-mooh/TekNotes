@@ -12,7 +12,9 @@
 	<artifactId>bcd</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>bcd</name>
-	<description>Demo project for Spring Boot</description>
+	<description>TekNotes is a centralized digital learning platform designed 
+		to help students easily access reliable, well-organized, 
+		and course-specific study materials — all in one place.</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -40,7 +42,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-webmvc</artifactId>
+			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 
 		<dependency>
@@ -70,11 +72,16 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
+			<groupId>org.springframework.security</groupId>
+			<artifactId>spring-security-core</artifactId>
+    	</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-webmvc-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-	</dependencies>
+	
+ </dependencies>
 
 	<build>
 		<plugins>

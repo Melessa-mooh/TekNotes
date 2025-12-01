@@ -1,16 +1,20 @@
+// controller/AuthController.java
 package com.appdevg4.bcd.teknotes.controller;
 
+import com.appdevg4.bcd.teknotes.dto.LoginRequest;
+import com.appdevg4.bcd.teknotes.dto.RegisterRequest;
+import com.appdevg4.bcd.teknotes.dto.UserDto;
 import com.appdevg4.bcd.teknotes.entity.User;
 import com.appdevg4.bcd.teknotes.service.UserService;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
 import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:3000")   // change if your React port is different
 public class AuthController {
 
     private final UserService userService;
@@ -19,51 +23,25 @@ public class AuthController {
         this.userService = userService;
     }
 
-    // ========= REGISTER =========
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody Map<String, String> body) {
-
-        String firstName = body.get("firstName");
-        String lastName = body.get("lastName");
-        String email = body.get("email");
-        String password = body.get("password");
-
-        // default role
-        String role = "STUDENT";
-
+    public ResponseEntity<UserDto> register(@RequestBody RegisterRequest request) {
         User user = new User();
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
-        user.setEmail(email);
-        user.setPassword(password);
-        user.setRole(role);
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setEmail(request.getEmail());
+        user.setPassword(request.getPassword());
+        user.setRole("student");   // default
 
         User saved = userService.register(user);
-
-        return ResponseEntity.ok(
-                Map.of(
-                        "message", "Registration successful",
-                        "userId", saved.getUserId(),
-                        "role", saved.getRole()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(UserDto.from(saved));
     }
 
-    // ========= LOGIN =========
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
-
-        String email = body.get("email");
-        String password = body.get("password");
-
-        Optional<User> loggedIn = userService.login(email, password);
-
-        return loggedIn
-                .map(u -> ResponseEntity.ok(
-                        Map.of(
-                                "message", "Login successful",
-                                "userId", u.getUserId(),
-                                "role", u.getRole())))
-                .orElseGet(() -> ResponseEntity
-                        .status(401)
-                        .body(Map.of("message", "Invalid credentials")));
+    public ResponseEntity<UserDto> login(@RequestBody LoginRequest request) {
+        Optional<User> userOpt = userService.login(request.getEmail(), request.getPassword());
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.ok(UserDto.from(userOpt.get()));
     }
 }

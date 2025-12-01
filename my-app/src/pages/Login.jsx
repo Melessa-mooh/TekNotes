@@ -14,12 +14,36 @@ export default function Login() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
 
-    alert("Successfully logged in! (UI only)");
+    try {
+      const res = await fetch("http://localhost:8080/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
 
-    navigate("/dashboard");
+      if (res.status === 401) {
+        alert("Invalid email or password");
+        return;
+      }
+
+      if (!res.ok) {
+        alert("Login failed");
+        return;
+      }
+
+      const user = await res.json();
+      // Optional: store user in localStorage
+      localStorage.setItem("teknotesUser", JSON.stringify(user));
+
+      alert("Successfully logged in!");
+      navigate("/dashboard");
+    } catch (err) {
+      console.error(err);
+      alert("Server error. Please try again.");
+    }
   };
 
   return (

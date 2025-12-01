@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "../styles/auth.css";
 
 export default function Register() {
+  const navigate = useNavigate();
+
   const [form, setForm] = useState({
     firstName: "",
     lastName: "",
@@ -32,7 +34,7 @@ export default function Register() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (form.password !== form.confirm) {
@@ -40,13 +42,35 @@ export default function Register() {
       return;
     }
 
-    alert("Registered (UI only — backend not connected yet)");
+    try {
+      const res = await fetch("http://localhost:8080/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName: form.firstName,
+          lastName: form.lastName,
+          email: form.email,
+          password: form.password,
+        }),
+      });
+
+      if (!res.ok) {
+        const message = await res.text();
+        alert("Registration failed: " + message);
+        return;
+      }
+
+      alert("Registered successfully!");
+      navigate("/login");
+    } catch (err) {
+      console.error(err);
+      alert("Server error. Please try again.");
+    }
   };
 
   return (
     <div className="auth-container">
       <div className="auth-card">
-
         {/* Logo / Header */}
         <h1 className="teknotes-title">
           <span className="red">Tek</span>
@@ -56,7 +80,6 @@ export default function Register() {
         <p className="subtitle">Create Your Account</p>
 
         <form onSubmit={handleSubmit} className="auth-form">
-
           {/* Name Row */}
           <div className="row-2">
             <input
