@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // ✅ Added useNavigate
 import { 
   Search, 
   Upload, 
@@ -19,31 +19,35 @@ import "../styles/materials.css";
 
 export default function Materials() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const navigate = useNavigate(); // ✅ Hook for navigation
 
   // State to hold all materials (Starts empty)
   const [materials, setMaterials] = useState([]);
 
- 
+  // Load Data
   useEffect(() => {
     const savedNotes = JSON.parse(localStorage.getItem("myMaterials")) || [];
-    
-    
     setMaterials(savedNotes);
   }, []);
 
-  // Calculate dynamic stats based on actual data length
+  // Stats
   const stats = [
     { label: "Total Notes", count: materials.length, icon: File, color: "gray" },
     { label: "Download", count: 0, icon: Download, color: "gray" },
     { label: "Published", count: materials.length, icon: CheckCircle, color: "gray" },
   ];
 
+  // ✅ Handle Preview Click
+  const handlePreview = (item) => {
+    // Navigate to /preview and pass the item data in state
+    navigate(`/preview/${item.id}`, { state: { file: item } });
+  };
+
   return (
     <div className="dashboard-container">
       <Sidebar isOpen={isSidebarOpen} />
 
       <main className="main-content">
-        {/* Header */}
         <header className="header">
           <div className="header-left">
             <button className="menu-btn" onClick={() => setSidebarOpen(!isSidebarOpen)}>
@@ -55,7 +59,6 @@ export default function Materials() {
             </div>
           </div>
           <div className="header-right">
-           
             <Link to="/uploads">
                 <button className="upload-btn-primary">
                 <Upload size={18} /> Upload
@@ -68,7 +71,7 @@ export default function Materials() {
 
         <div className="materials-container">
           
-         
+          {/* Stats Row */}
           <div className="materials-stats-row">
             {stats.map((stat, index) => (
               <div className="material-stat-card" key={index}>
@@ -80,13 +83,12 @@ export default function Materials() {
             ))}
           </div>
 
-          {/* 2. Filter Bar */}
+          {/* Filter Bar */}
           <div className="materials-toolbar">
             <div className="search-bar-material">
               <Search size={18} className="search-icon" />
               <input type="text" placeholder="Search materials..." />
             </div>
-            
             <div className="toolbar-right">
               <select className="subject-select">
                 <option>All Subjects</option>
@@ -98,13 +100,12 @@ export default function Materials() {
             </div>
           </div>
 
-          {/* 3. Materials Grid */}
+          {/* Materials Grid */}
           <div className="materials-grid">
             {materials.length > 0 ? (
               materials.map((item) => (
                 <div key={item.id} className="material-card">
                   
-                
                   <div className="card-top">
                     <div className="file-icon-red">
                       <FileText size={24} />
@@ -115,7 +116,6 @@ export default function Materials() {
                     </div>
                   </div>
 
-                
                   <div className="card-meta-row">
                     <div className="author-info">
                       <User size={14} />
@@ -135,17 +135,19 @@ export default function Materials() {
                     </div>
                   </div>
 
-                  {/* Footer Actions */}
                   <div className="card-footer">
                     <div className="uploader-info">
                       <div className="uploader-avatar">
-                        {/* Simple avatar placeholder */}
                         <div style={{width: '100%', height:'100%', background: '#ccc'}}></div>
                       </div>
                       <span>Uploaded by {item.uploadedBy}</span>
                     </div>
                     <div className="card-buttons">
-                      <button className="preview-btn">Preview</button>
+                      {/* ✅ UPDATED: Preview Button */}
+                      <button className="preview-btn" onClick={() => handlePreview(item)}>
+                        Preview
+                      </button>
+                      
                       <button className="download-action-btn">
                         <Download size={14} /> Downloads
                       </button>

@@ -1,0 +1,208 @@
+/* Wrapper for the whole view */
+.studocu-preview-wrapper {
+  background-color: #525659; /* Darker background standard for PDF viewers */
+  min-height: calc(100vh - 80px); 
+  /* ✅ CHANGED: Removed padding to allow full width/screen mode */
+  padding: 0; 
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  overflow-y: hidden; /* Hide outer scroll, let the iframe/image handle scrolling */
+}
+
+/* Header Adjustments */
+.preview-header {
+  border-bottom: 1px solid #e5e7eb;
+  padding: 12px 32px;
+  height: 80px;
+  background: white;
+  z-index: 10;
+  position: relative;
+}
+
+.file-info-header {
+  margin-left: 12px;
+}
+
+.file-info-header h1 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 500px;
+}
+
+.file-info-header p {
+  font-size: 12px;
+  color: #6b7280;
+  margin: 2px 0 0 0;
+}
+
+.studocu-download-btn {
+  background-color: #4ade80; 
+  color: #064e3b;
+  font-weight: 600;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+}
+
+.studocu-download-btn:hover {
+  background-color: #22c55e;
+}
+
+.icon-actions {
+  display: flex;
+  gap: 8px;
+  margin: 0 16px;
+  border-left: 1px solid #e5e7eb;
+  padding-left: 16px;
+}
+
+.icon-action {
+  background: none;
+  border: none;
+  color: #64748b;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 50%;
+  transition: background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-action:hover {
+  background: #f3f4f6;
+  color: #1e293b;
+}
+
+.user-profile-icon {
+  width: 32px;
+  height: 32px;
+  background: #e2e8f0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #475569;
+  cursor: pointer;
+}
+
+/* --- The Document Container (Full Screen Mode) --- */
+.document-paper {
+  background: white;
+  width: 100%;
+  /* ✅ CHANGED: Force full height and width */
+  height: calc(100vh - 80px); 
+  max-width: 100%; 
+  box-shadow: none;
+  border-radius: 0;
+  padding: 0;
+  position: relative;
+  overflow: auto; /* Allow scrolling within the paper container */
+}
+
+/* Image Preview */
+.preview-image {
+  width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+/* PDF/Iframe Preview */
+.preview-iframe {
+  width: 100%;
+  height: 100%; /* Fill the container */
+  border: none;
+  display: block;
+}
+
+/* Text Content Preview (Fallback for non-PDF/Image files) */
+.preview-text-content {
+  padding: 60px;
+  max-width: 850px;
+  margin: 0 auto;
+  background: white;
+  min-height: 100%;
+}
+
+.preview-text-content h3 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #111827;
+  border-bottom: 2px solid #f3f4f6;
+  padding-bottom: 10px;
+}
+
+.meta-text {
+  font-size: 14px;
+  color: #4b5563;
+  line-height: 1.6;
+}
+
+.divider {
+  border: 0;
+  border-top: 1px solid #e5e7eb;
+  margin: 24px 0;
+}
+
+.document-body {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 16px;
+  line-height: 1.8;
+  color: #374151;
+  text-align: justify;
+}
+
+.document-body p {
+  margin-bottom: 16px;
+}
+
+.watermark-text {
+  margin-top: 80px;
+  text-align: center;
+  color: #9ca3af;
+  font-style: italic;
+  font-size: 14px;
+  user-select: none;
+}
+
+/* Error State */
+.preview-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #64748b;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .studocu-preview-wrapper {
+    padding: 0;
+  }
+
+  .file-info-header p {
+    display: none;
+  }
+  
+  .icon-actions {
+    display: none;
+  }
+
+  .studocu-download-btn span {
+    display: none;
+  }
+}

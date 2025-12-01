@@ -1,7 +1,7 @@
 import React from "react";
 import { FileText, User, Star, Download } from "lucide-react";
 
-export default function SearchCard({ data, onRate }) {
+export default function SearchCard({ data, onRate, onDownload, onPreview }) {
   return (
     <div className="search-card-item">
       
@@ -44,19 +44,22 @@ export default function SearchCard({ data, onRate }) {
       <div className="card-footer-section">
         <div className="uploader-block">
           <div className="uploader-avatar">
-            {/* Placeholder for avatar */}
             <div style={{width:'100%', height:'100%', background:'#ddd', borderRadius: '50%'}}></div>
           </div>
           <span>Uploaded by {data.uploadedBy}</span>
         </div>
         
         <div className="card-action-buttons">
-          {/* Rate Button triggers the modal via parent prop */}
           <button className="btn-rate" onClick={() => onRate(data)}>
             <Star size={14} /> Rate
           </button>
-          <button className="btn-preview">Preview</button>
-          <button className="btn-download">
+          
+          {/* ✅ UPDATED: Preview Button */}
+          <button className="btn-preview" onClick={() => onPreview(data)}>
+            Preview
+          </button>
+          
+          <button className="btn-download" onClick={() => onDownload(data)}>
             <Download size={14} /> Downloads
           </button>
         </div>

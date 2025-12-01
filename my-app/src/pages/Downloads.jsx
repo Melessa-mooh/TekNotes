@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Search, 
   Upload, 
@@ -10,77 +10,37 @@ import {
   Heart, 
   FileText, 
   Star, 
-  Download, 
-  Eye 
+  Download
 } from "lucide-react";
 
-// Shared Components
 import Sidebar from "../components/Sidebar";
-
-// Styles
-import "../styles/dashboard.css"; // Base layout
-import "../styles/downloads.css"; // Page specific styles
+import "../styles/dashboard.css"; 
+import "../styles/downloads.css"; 
 
 export default function Downloads() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  
+  // State for downloads (starts empty)
+  const [downloads, setDownloads] = useState([]);
 
-  // Stats Data matching your screenshot
+  // ✅ LOAD DOWNLOADS FROM STORAGE
+  useEffect(() => {
+    // 1. Fetch the list saved by the Search page
+    const savedDownloads = JSON.parse(localStorage.getItem("myDownloads")) || [];
+    setDownloads(savedDownloads);
+  }, []);
+
   const stats = [
     { label: "Reviews Written", count: 5, icon: Bookmark, color: "red" },
     { label: "Folders", count: 5, icon: Folder, color: "yellow" },
-    { label: "Added This Week", count: 0, icon: Heart, color: "green" },
+    { label: "Total Downloads", count: downloads.length, icon: Heart, color: "green" }, // Dynamic count
   ];
-
-  // Downloads Data
-  const [downloads] = useState([
-    { 
-      id: 1, 
-      title: "Math in Modern World - Methods of Data Collection", 
-      description: "Comprehensive notes covering arrays, linked lists, trees, and sorting algorithms with examples",
-      author: "Erica Galvez",
-      date: "10/25/25",
-      rating: 4.8,
-      downloadCount: 201,
-      uploadedBy: "Mark"
-    },
-    { 
-      id: 2, 
-      title: "Math in Modern World - Methods of Data Collection", 
-      description: "Comprehensive notes covering arrays, linked lists, trees, and sorting algorithms with examples",
-      author: "Erica Galvez",
-      date: "10/25/25",
-      rating: 4.8,
-      downloadCount: 201,
-      uploadedBy: "Mark"
-    },
-    { 
-      id: 3, 
-      title: "Math in Modern World - Methods of Data Collection", 
-      description: "Comprehensive notes covering arrays, linked lists, trees, and sorting algorithms with examples",
-      author: "Erica Galvez",
-      date: "10/25/25",
-      rating: 4.8,
-      downloadCount: 201,
-      uploadedBy: "Mark"
-    },
-    { 
-      id: 4, 
-      title: "Math in Modern World - Methods of Data Collection", 
-      description: "Comprehensive notes covering arrays, linked lists, trees, and sorting algorithms with examples",
-      author: "Erica Galvez",
-      date: "10/25/25",
-      rating: 4.8,
-      downloadCount: 201,
-      uploadedBy: "Mark"
-    },
-  ]);
 
   return (
     <div className="dashboard-container">
       <Sidebar isOpen={isSidebarOpen} />
 
       <main className="main-content">
-        {/* Header */}
         <header className="header">
           <div className="header-left">
             <button className="menu-btn" onClick={() => setSidebarOpen(!isSidebarOpen)}>
@@ -97,7 +57,7 @@ export default function Downloads() {
 
         <div className="downloads-container">
           
-          {/* 1. Stats Row */}
+          {/* Stats Row */}
           <div className="stats-row">
             {stats.map((stat, index) => {
               const Icon = stat.icon;
@@ -115,7 +75,7 @@ export default function Downloads() {
             })}
           </div>
 
-          {/* 2. Filter Bar */}
+          {/* Filter Bar */}
           <div className="downloads-toolbar">
             <div className="search-bar-download">
               <Search size={18} className="search-icon" />
@@ -132,60 +92,70 @@ export default function Downloads() {
             </div>
           </div>
 
-          {/* 3. Downloads Grid */}
+          {/* Downloads Grid */}
           <div className="downloads-grid">
-            {downloads.map((item) => (
-              <div key={item.id} className="download-card-large">
-                
-                {/* File Icon + Title Block */}
-                <div className="card-top">
-                  <div className="file-icon-red">
-                    <FileText size={24} />
-                  </div>
-                  <div className="card-header-text">
-                    <h4>{item.title}</h4>
-                    <p className="card-desc">{item.description}</p>
-                  </div>
-                </div>
-
-                {/* Author & Stats Meta */}
-                <div className="card-meta-row">
-                  <div className="author-info">
-                    <User size={14} />
-                    <span>{item.author}</span>
-                    <span className="dot">•</span>
-                    <span>{item.date}</span>
-                  </div>
-                  <div className="stats-info">
-                    <span className="rating-badge">
-                      <Star size={12} fill="#fbbf24" stroke="none" />
-                      {item.rating}
-                    </span>
-                    <span className="download-count">
-                      <Download size={12} />
-                      {item.downloadCount}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Footer Actions */}
-                <div className="card-footer">
-                  <div className="uploader-info">
-                    <div className="uploader-avatar">
-                      <User size={16} />
+            {downloads.length > 0 ? (
+              downloads.map((item) => (
+                <div key={item.id} className="download-card-large">
+                  
+                  {/* File Icon + Title Block */}
+                  <div className="card-top">
+                    <div className="file-icon-red">
+                      <FileText size={24} />
                     </div>
-                    <span>Uploaded by {item.uploadedBy}</span>
+                    <div className="card-header-text">
+                      <h4>{item.title}</h4>
+                      <p className="card-desc">{item.description}</p>
+                    </div>
                   </div>
-                  <div className="card-buttons">
-                    <button className="preview-btn">Preview</button>
-                    <button className="download-action-btn">
-                      <Download size={14} /> Downloads
-                    </button>
-                  </div>
-                </div>
 
+                  {/* Author & Stats Meta */}
+                  <div className="card-meta-row">
+                    <div className="author-info">
+                      <User size={14} />
+                      {/* Handle different data structures (uploaded vs public) */}
+                      <span>{item.author || item.instructor || "Unknown"}</span>
+                      <span className="dot">•</span>
+                      <span>{item.date || item.uploadTime || item.downloadedAt}</span>
+                    </div>
+                    <div className="stats-info">
+                      <span className="rating-badge">
+                        <Star size={12} fill="#fbbf24" stroke="none" />
+                        {item.rating || 0}
+                      </span>
+                      <span className="download-count">
+                        <Download size={12} />
+                        {/* Fallback to 1 if just downloaded */}
+                        {item.downloads || item.downloadCount || 1}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Footer Actions */}
+                  <div className="card-footer">
+                    <div className="uploader-info">
+                      <div className="uploader-avatar">
+                        <div style={{width:'100%', height:'100%', background:'#ddd', borderRadius:'50%'}}></div>
+                      </div>
+                      <span>Uploaded by {item.uploadedBy || "System"}</span>
+                    </div>
+                    <div className="card-buttons">
+                      <button className="preview-btn">Preview</button>
+                      <button className="download-action-btn">
+                        <Download size={14} /> Downloaded
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
+              ))
+            ) : (
+              <div style={{gridColumn: "1/-1", textAlign: "center", padding: "60px", color: "#64748b"}}>
+                <div style={{fontSize: "48px", marginBottom: "16px", opacity: 0.5}}>📂</div>
+                <h3>No downloads yet</h3>
+                <p>Visit the Search Resources page to find and download materials.</p>
               </div>
-            ))}
+            )}
           </div>
 
         </div>
