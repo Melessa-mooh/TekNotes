@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom"; // ✅ Added useNavigate
 import { 
   Search, 
   Upload, 
@@ -12,30 +12,28 @@ import Sidebar from "../components/Sidebar";
 import SearchCard from "../components/SearchCard";
 import ReviewModal from "../components/ReviewModal"; 
 
-// Styles
 import "../styles/dashboard.css"; 
 import "../styles/search.css"; 
 
 export default function SearchResources() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   
-  // 1. Get query passed from Dashboard
+  // Navigation Hooks
   const location = useLocation();
-  const initialQuery = location.state?.query || "";
+  const navigate = useNavigate(); // ✅ Initialize navigation
   
+  const initialQuery = location.state?.query || "";
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [activeCategory, setActiveCategory] = useState("All");
-
-  // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedResource, setSelectedResource] = useState(null);
 
-  // 2. Mock Data (Public Resources)
+  // Mock Data
   const publicResources = [
     { 
       id: 101, 
       title: "Introduction to Psychology", 
-      description: "Foundational concepts in behavioral science and cognitive processes.",
+      description: "Foundational concepts in behavioral science.",
       subject: "Psychology", 
       author: "Dr. Freud", 
       fileType: "PDF", 
@@ -61,7 +59,7 @@ export default function SearchResources() {
     { 
       id: 103, 
       title: "Macroeconomics 101", 
-      description: "Study of the economy as a whole, including inflation and GDP.",
+      description: "Study of the economy as a whole.",
       subject: "Economics", 
       author: "Dr. Keynes", 
       fileType: "DOCX", 
@@ -74,7 +72,7 @@ export default function SearchResources() {
     { 
       id: 104, 
       title: "Data Structures - Binary Trees", 
-      description: "Understanding tree data structures and their algorithms.",
+      description: "Understanding tree data structures.",
       subject: "Computer Science", 
       author: "Prof. Anderson", 
       fileType: "PDF", 
@@ -88,10 +86,8 @@ export default function SearchResources() {
 
   const [allResources, setAllResources] = useState(publicResources);
 
-  // 3. Load Your LocalStorage Uploads on Mount
   useEffect(() => {
     const myUploads = JSON.parse(localStorage.getItem("myMaterials")) || [];
-    
     const formattedUploads = myUploads.map(upload => ({
       id: upload.id,
       title: upload.title,
@@ -105,60 +101,65 @@ export default function SearchResources() {
       downloads: upload.downloadCount || 0,
       uploadedBy: "Me"
     }));
-
     setAllResources([...formattedUploads, ...publicResources]);
   }, []);
 
-  // 4. Search & Filter Logic
   const filteredResources = allResources.filter((item) => {
     const query = searchQuery.toLowerCase();
-    
-    const matchesSearch = 
-      item.title.toLowerCase().includes(query) || 
-      item.subject.toLowerCase().includes(query) ||
-      item.author.toLowerCase().includes(query);
-
+    const matchesSearch = item.title?.toLowerCase().includes(query) || item.subject?.toLowerCase().includes(query);
     const matchesCategory = activeCategory === "All" || item.subject === activeCategory;
-
     return matchesSearch && matchesCategory;
   });
 
-  // Open Modal Handler
+  // Handlers
   const handleRateClick = (resource) => {
     setSelectedResource(resource);
     setIsModalOpen(true);
   };
 
-  // ✅ THIS FUNCTION SAVES THE REVIEW SO IT APPEARS ON THE REVIEWS PAGE
   const handleReviewSubmit = (reviewData) => {
     if (!selectedResource) return;
-
-    // 1. Create the new Review Object
     const newReview = {
-      id: Date.now(), // Unique ID
+      id: Date.now(),
       title: selectedResource.title,
       subject: selectedResource.subject,
       professor: selectedResource.author,
-      content: reviewData.comment, // The comment from the modal
-      rating: parseInt(reviewData.rating), // The stars
+      content: reviewData.comment,
+      rating: parseInt(reviewData.rating),
       likes: 0, 
       comments: 0,
-      isMyReview: true, // Tag it as ours so we can delete it later
+      isMyReview: true,
       reviewTime: "Just now"
     };
-
-    // 2. Get existing reviews from LocalStorage
     const existingReviews = JSON.parse(localStorage.getItem("myReviews")) || [];
-
-    // 3. Add to list (newest first)
-    const updatedReviews = [newReview, ...existingReviews];
-
-    // 4. Save back to LocalStorage (This is what the Reviews page reads!)
-    localStorage.setItem("myReviews", JSON.stringify(updatedReviews));
-
-    // 5. Notify and Close
+    localStorage.setItem("myReviews", JSON.stringify([newReview, ...existingReviews]));
     alert("Review submitted! You can see it on the Reviews page.");
     setIsModalOpen(false);
+  };
+
+  const handleDownload = (resource) => {
+    const existingDownloads = JSON.parse(localStorage.getItem("myDownloads")) || [];
+    const isAlreadyDownloaded = existingDownloads.some(item => item.id === resource.id);
+    
+    if (isAlreadyDownloaded) {
+      alert("You have already downloaded this resource!");
+      return;
+    }
+
+    const newDownload = {
+        ...resource,
+        downloadedAt: new Date().toLocaleDateString()
+    };
+    
+    const updatedDownloads = [newDownload, ...existingDownloads];
+    localStorage.setItem("myDownloads", JSON.stringify(updatedDownloads));
+    
+    alert(`"${resource.title}" has been added to your Downloads.`);
+  };
+
+  // ✅ Handle Preview Navigation
+  const handlePreview = (item) => {
+    navigate(`/preview/${item.id}`, { state: { file: item } });
   };
 
   return (
@@ -184,7 +185,6 @@ export default function SearchResources() {
         </header>
 
         <div className="search-page-container">
-          
           <div className="search-toolbar-wrapper">
             <div className="main-search-input">
               <Search size={20} className="search-icon-gray" />
@@ -195,56 +195,34 @@ export default function SearchResources() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            
             <div className="dropdown-filters">
-              <select 
-                className="filter-dropdown"
-                value={activeCategory}
-                onChange={(e) => setActiveCategory(e.target.value)}
-              >
+              <select className="filter-dropdown" onChange={(e) => setActiveCategory(e.target.value)}>
                 <option value="All">All Subjects</option>
                 <option value="Computer Science">Computer Science</option>
-                <option value="Mathematics">Mathematics</option>
                 <option value="Psychology">Psychology</option>
-                <option value="Economics">Economics</option>
-                <option value="Chemistry">Chemistry</option>
-              </select>
-              
-              <select className="filter-dropdown">
-                <option>Teachers</option>
-                <option>Most Popular</option>
               </select>
             </div>
           </div>
 
           <div className="search-results-grid">
-            {filteredResources.length > 0 ? (
-              filteredResources.map((item) => (
-                <SearchCard 
-                  key={item.id} 
-                  data={item} 
-                  onRate={handleRateClick} 
-                />
-              ))
-            ) : (
-              <div className="no-results">
-                <div className="no-results-icon">🔍</div>
-                <h3>No resources found</h3>
-                <p>Try adjusting your search terms or filters.</p>
-              </div>
-            )}
+            {filteredResources.map((item) => (
+              <SearchCard 
+                key={item.id} 
+                data={item} 
+                onRate={handleRateClick} 
+                onDownload={handleDownload}
+                onPreview={handlePreview} // ✅ Pass the preview handler to the card
+              />
+            ))}
           </div>
-
         </div>
 
-        {/* Review Modal */}
         <ReviewModal 
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           onSubmit={handleReviewSubmit}
           resourceTitle={selectedResource?.title}
         />
-
       </main>
     </div>
   );

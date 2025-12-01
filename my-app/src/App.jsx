@@ -11,7 +11,12 @@ import Uploads from "./pages/Uploads"; // ✅ Import the new page
 import Downloads from "./pages/Downloads"; // Import the new page
 import Materials from "./pages/Materials"; // ✅ Import Materials
 import SearchResources from "./pages/SearchResources"; // Import
+import FilePreview from "./pages/FilePreview"; // Import
 import ProfileSettings from "./pages/profileSettings";
+
+
+
+
 
 
 
@@ -29,6 +34,8 @@ export default function App() {
          <Route path="/search" element={<SearchResources />} />
          <Route path="/materials" element={<Materials />} />
          <Route path="/downloads" element={<Downloads />} />
+    
+         <Route path="/preview/:id" element={<FilePreview />} />
          <Route path="/settings" element={<Settings />} />
          <Route path="/settings/profile" element={<ProfileSettings />} />
         
