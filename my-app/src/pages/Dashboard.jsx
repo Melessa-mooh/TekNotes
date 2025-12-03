@@ -16,6 +16,7 @@ import {
 import Sidebar from "../components/Sidebar";
 import ResourceCard from "../components/ResourceCard";
 import ApiService from "../services/api";
+import Swal from 'sweetalert2';
 
 export default function Dashboard() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -85,7 +86,15 @@ export default function Dashboard() {
       setRecentDownloads(data.recentDownloads || []);
     } catch (err) {
       console.error("Error loading dashboard data:", err);
-      alert("Failed to load dashboard data. Please try again.");
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to load dashboard data. Please try again.',
+        toast: true,
+        position: 'top-end',
+        timer: 3000,
+        showConfirmButton: false
+      });
     }
   };
 
@@ -113,7 +122,15 @@ export default function Dashboard() {
         setFullName(first);
       } catch (err) {
         console.error("Error fetching user profile:", err);
-        alert("Failed to load user profile. Please try again.");
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to load user profile. Please try again.',
+          toast: true,
+          position: 'top-end',
+          timer: 3000,
+          showConfirmButton: false
+        });
       }
 
       // 2. Load dashboard stats using same userId

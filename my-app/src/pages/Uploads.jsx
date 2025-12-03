@@ -10,6 +10,7 @@ import {
   CheckCircle,
   X,
 } from "lucide-react";
+import Swal from 'sweetalert2';
 
 import Sidebar from "../components/Sidebar";
 import "../styles/dashboard.css";
@@ -126,11 +127,23 @@ export default function Uploads() {
 
       const data = await ApiService.uploadResource(form);
 
-      alert("Upload successful!");
-      navigate("/materials");
+      Swal.fire({
+        icon: 'success',
+        title: 'Upload Successful!',
+        text: 'Your file has been uploaded successfully',
+        confirmButtonText: 'View Materials'
+      }).then((result) => {
+        if (result.isConfirmed) {
+          navigate("/materials");
+        }
+      });
     } catch (err) {
       console.error(err);
-      alert("There was an error uploading your file: " + err.message);
+      Swal.fire({
+        icon: 'error',
+        title: 'Upload Failed',
+        text: err.message || 'There was an error uploading your file'
+      });
     }
   };
 

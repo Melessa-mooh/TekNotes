@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/auth.css";
 import ApiService from "../services/api";
+import Swal from 'sweetalert2';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -32,14 +33,29 @@ export default function Login() {
       // Store full user object for later (Dashboard will read id from here)
       localStorage.setItem("teknotesUser", JSON.stringify(user));
 
-      alert("Successfully logged in!");
-      navigate("/dashboard");
+      Swal.fire({
+        icon: 'success',
+        title: 'Login Successful!',
+        text: `Welcome back, ${user.firstName || user.email}!`,
+        timer: 2000,
+        showConfirmButton: false
+      }).then(() => {
+        navigate("/dashboard");
+      });
     } catch (err) {
       console.error(err);
       if (err.message.includes('401')) {
-        alert("Invalid email or password");
+        Swal.fire({
+          icon: 'error',
+          title: 'Login Failed',
+          text: 'Invalid email or password'
+        });
       } else {
-        alert("Server error. Please try again.");
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Server error. Please try again.'
+        });
       }
     }
   };

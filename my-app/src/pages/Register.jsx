@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/auth.css";
 import ApiService from "../services/api";
+import Swal from 'sweetalert2';
 
 export default function Register() {
   const navigate = useNavigate();
@@ -53,11 +54,21 @@ export default function Register() {
       
       await ApiService.register(userData);
       
-      alert("Registered successfully!");
-      navigate("/login");
+      Swal.fire({
+        icon: 'success',
+        title: 'Registration Successful!',
+        text: 'Your account has been created. Please login.',
+        confirmButtonText: 'Go to Login'
+      }).then(() => {
+        navigate("/login");
+      });
     } catch (err) {
       console.error(err);
-      alert("Registration failed: " + err.message);
+      Swal.fire({
+        icon: 'error',
+        title: 'Registration Failed',
+        text: err.message || 'Server error. Please try again.'
+      });
     }
   };
 

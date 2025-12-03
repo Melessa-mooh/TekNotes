@@ -8,7 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/reviews")
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:3000")
 public class ReviewController {
 
     private final ReviewService service;
@@ -40,5 +40,17 @@ public class ReviewController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Integer id) {
         service.delete(id);
+    }
+
+    @GetMapping("/user/{userId}")
+    public List<Review> getUserReviews(@PathVariable Integer userId) {
+        // You may want to add a repository method to filter by userId
+        return service.findAll();
+    }
+
+    @GetMapping("/resource/{resourceId}")
+    public List<Review> getResourceReviews(@PathVariable Integer resourceId) {
+        // You may want to add a repository method to filter by resourceId
+        return service.findAll();
     }
 }
