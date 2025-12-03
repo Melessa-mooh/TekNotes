@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { 
   Search, 
   Upload, 
@@ -12,30 +13,95 @@ import {
   Trash2, 
   MessageSquare
 } from "lucide-react";
+import Swal from 'sweetalert2';
 
 import Sidebar from "../components/Sidebar";
+import ApiService from "../services/api";
 import "../styles/dashboard.css"; 
 import "../styles/reviews.css";   
 
 export default function Reviews() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
-
-  // State to hold the reviews (Starts empty)
   const [reviews, setReviews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  // ✅ 2. Load Data from LocalStorage
+  // Load reviews from backend
   useEffect(() => {
-    const savedReviews = JSON.parse(localStorage.getItem("myReviews")) || [];
-    setReviews(savedReviews);
-  }, []);
+    const loadReviews = async () => {
+      try {
+        const storedUser = localStorage.getItem("teknotesUser");
+        if (!storedUser) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Not Logged In',
+            text: 'Please login to view reviews',
+          });
+          navigate('/login');
+          return;
+        }
 
-  // ✅ 3. Delete Functionality
-  const handleDelete = (id) => {
-    if (window.confirm("Delete this review?")) {
-      const updatedReviews = reviews.filter((r) => r.id !== id);
-      setReviews(updatedReviews);
-      // Update storage so it stays deleted
-      localStorage.setItem("myReviews", JSON.stringify(updatedReviews));
+        const user = JSON.parse(storedUser);
+        const userId = user.id || user.userId;
+
+        // Fetch user's reviews from backend
+        const userReviews = await ApiService.getUserReviews(userId);
+        setReviews(userReviews);
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'Reviews Loaded',
+          text: `You have written ${userReviews.length} reviews`,
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } catch (err) {
+        console.error("Error loading reviews:", err);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to load reviews: ' + err.message
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadReviews();
+  }, [navigate]);
+
+  // Delete functionality with SweetAlert2
+  const handleDelete = async (id) => {
+    const result = await Swal.fire({
+      title: 'Delete Review?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await ApiService.deleteReview(id);
+        const updatedReviews = reviews.filter((r) => r.id !== id);
+        setReviews(updatedReviews);
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'Deleted!',
+          text: 'Your review has been deleted',
+          timer: 1500,
+          showConfirmButton: false
+        });
+      } catch (err) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to delete review: ' + err.message
+        });
+      }
     }
   };
 

@@ -1,57 +1,101 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Menu, FileText, Star, BookOpen, Clock } from "lucide-react";
+import Swal from 'sweetalert2';
 
 // Components
 import Sidebar from "../components/Sidebar";
+import ApiService from "../services/api";
 
 // Styles
-import "../styles/bookmarks.css"; // Make sure your CSS is saved here
-import "../styles/dashboard.css"; // We still need this for the main layout wrapper
+import "../styles/bookmarks.css";
+import "../styles/dashboard.css";
 
 export default function Bookmarks() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("All");
+  const [bookmarks, setBookmarks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  // Mock Data matching your card structure
-  const [bookmarks] = useState([
-    {
-      id: 1,
-      title: "Data Structures - Binary Trees",
-      subject: "Computer Science",
-      professor: "Prof. Anderson",
-      fileType: "PDF",
-      rating: 4.8,
-      date: "2 days ago"
-    },
-    {
-      id: 2,
-      title: "Calculus II - Integration",
-      subject: "Mathematics",
-      professor: "Dr. Martinez",
-      fileType: "PPT",
-      rating: 4.5,
-      date: "1 week ago"
-    },
-    {
-      id: 3,
-      title: "European History Notes",
-      subject: "History",
-      professor: "Prof. Chen",
-      fileType: "DOCX",
-      rating: 4.2,
-      date: "3 hours ago"
-    },
-    {
-      id: 4,
-      title: "Physics - Quantum Mechanics",
-      subject: "Physics",
-      professor: "Dr. Richard",
-      fileType: "PDF",
-      rating: 4.9,
-      date: "1 day ago"
-    },
-  ]);
+  // Load bookmarks from backend
+  useEffect(() => {
+    const loadBookmarks = async () => {
+      try {
+        const storedUser = localStorage.getItem("teknotesUser");
+        if (!storedUser) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Not Logged In',
+            text: 'Please login to view bookmarks',
+          });
+          navigate('/login');
+          return;
+        }
+
+        const user = JSON.parse(storedUser);
+        const userId = user.id || user.userId;
+
+        // Fetch user's bookmarks from backend
+        const userBookmarks = await ApiService.getUserBookmarks(userId);
+        setBookmarks(userBookmarks);
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'Bookmarks Loaded',
+          text: `You have ${userBookmarks.length} bookmarks`,
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } catch (err) {
+        console.error("Error loading bookmarks:", err);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to load bookmarks: ' + err.message
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadBookmarks();
+  }, [navigate]);
+
+  // Delete bookmark handler
+  const handleDeleteBookmark = async (bookmarkId) => {
+    const result = await Swal.fire({
+      title: 'Remove Bookmark?',
+      text: "This will remove the bookmark from your list",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, remove it!'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await ApiService.deleteBookmark(bookmarkId);
+        setBookmarks(bookmarks.filter(b => b.id !== bookmarkId));
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'Removed!',
+          text: 'Bookmark has been removed',
+          timer: 1500,
+          showConfirmButton: false
+        });
+      } catch (err) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to remove bookmark: ' + err.message
+        });
+      }
+    }
+  };
 
   // Filter Logic
   const filteredBookmarks = bookmarks.filter((item) => {

@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/auth.css";
+import ApiService from "../services/api";
+import Swal from 'sweetalert2';
 
 export default function Register() {
   const navigate = useNavigate();
@@ -43,28 +45,30 @@ export default function Register() {
     }
 
     try {
-      const res = await fetch("http://localhost:8080/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          firstName: form.firstName,
-          lastName: form.lastName,
-          email: form.email,
-          password: form.password,
-        }),
+      const userData = {
+        firstName: form.firstName,
+        lastName: form.lastName,
+        email: form.email,
+        password: form.password,
+      };
+      
+      await ApiService.register(userData);
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'Registration Successful!',
+        text: 'Your account has been created. Please login.',
+        confirmButtonText: 'Go to Login'
+      }).then(() => {
+        navigate("/login");
       });
-
-      if (!res.ok) {
-        const message = await res.text();
-        alert("Registration failed: " + message);
-        return;
-      }
-
-      alert("Registered successfully!");
-      navigate("/login");
     } catch (err) {
       console.error(err);
-      alert("Server error. Please try again.");
+      Swal.fire({
+        icon: 'error',
+        title: 'Registration Failed',
+        text: err.message || 'Server error. Please try again.'
+      });
     }
   };
 

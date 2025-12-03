@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { 
   Search, 
   Upload, 
@@ -12,23 +13,59 @@ import {
   Star, 
   Download
 } from "lucide-react";
+import Swal from 'sweetalert2';
 
 import Sidebar from "../components/Sidebar";
+import ApiService from "../services/api";
 import "../styles/dashboard.css"; 
 import "../styles/downloads.css"; 
 
 export default function Downloads() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
-  
-  // State for downloads (starts empty)
   const [downloads, setDownloads] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  // ✅ LOAD DOWNLOADS FROM STORAGE
+  // Load downloads from backend (all resources)
   useEffect(() => {
-    // 1. Fetch the list saved by the Search page
-    const savedDownloads = JSON.parse(localStorage.getItem("myDownloads")) || [];
-    setDownloads(savedDownloads);
-  }, []);
+    const loadDownloads = async () => {
+      try {
+        const storedUser = localStorage.getItem("teknotesUser");
+        if (!storedUser) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Not Logged In',
+            text: 'Please login to view downloads',
+          });
+          navigate('/login');
+          return;
+        }
+
+        // Fetch all available resources from backend
+        const allResources = await ApiService.getAllResources();
+        setDownloads(allResources);
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'Downloads Available',
+          text: `${allResources.length} resources available for download`,
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } catch (err) {
+        console.error("Error loading downloads:", err);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to load downloads: ' + err.message
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDownloads();
+  }, [navigate]);
 
   const stats = [
     { label: "Reviews Written", count: 5, icon: Bookmark, color: "red" },

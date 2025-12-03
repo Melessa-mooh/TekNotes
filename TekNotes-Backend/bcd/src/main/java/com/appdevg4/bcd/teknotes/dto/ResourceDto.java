@@ -16,9 +16,16 @@ public class ResourceDto {
     private String courseCode;
     private String teacherName;
 
-    private String uploadedBy;   // "First Last"
-    private String fileType;     // PDF / PPTX / etc.
-    private String createdAt;    // ISO string
+    private String uploadedBy; // "First Last"
+    private Integer uploaderId;
+    private String fileType; // PDF / PPTX / etc.
+    private String createdAt; // ISO string
+
+    // New fields for reviews and bookmarks
+    private Double averageRating;
+    private Integer reviewCount;
+    private Integer downloadCount;
+    private Boolean isBookmarked;
 
     public static ResourceDto from(Resource r) {
         ResourceDto dto = new ResourceDto();
@@ -38,8 +45,7 @@ public class ResourceDto {
 
         // uploader info
         if (r.getUploader() != null) {
-            dto.uploadedBy =
-                    r.getUploader().getFirstName() + " " +
+            dto.uploadedBy = r.getUploader().getFirstName() + " " +
                     r.getUploader().getLastName();
         }
 
@@ -56,6 +62,29 @@ public class ResourceDto {
         dto.createdAt = r.getCreatedAt() != null
                 ? r.getCreatedAt().toString()
                 : null;
+
+        // Calculate average rating from reviews
+        if (r.getReviews() != null && !r.getReviews().isEmpty()) {
+            dto.reviewCount = r.getReviews().size();
+            double avgRating = r.getReviews().stream()
+                    .filter(review -> review.getRating() != null)
+                    .mapToInt(review -> review.getRating())
+                    .average()
+                    .orElse(0.0);
+            dto.averageRating = Math.round(avgRating * 10.0) / 10.0;
+        } else {
+            dto.reviewCount = 0;
+            dto.averageRating = 0.0;
+        }
+
+        // Set download count (default to 0 for now)
+        dto.downloadCount = 0;
+        dto.isBookmarked = false;
+
+        // Get uploader ID
+        if (r.getUploader() != null) {
+            dto.uploaderId = r.getUploader().getUserId();
+        }
 
         return dto;
     }

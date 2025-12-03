@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom"; // ✅ Added useNavigate
+import { Link, useNavigate } from "react-router-dom";
 import { 
   Search, 
   Upload, 
@@ -10,25 +10,66 @@ import {
   Download, 
   Star,
   CheckCircle,
-  File
+  File,
+  Bookmark
 } from "lucide-react";
+import Swal from 'sweetalert2';
 
 import Sidebar from "../components/Sidebar";
+import ApiService from "../services/api";
 import "../styles/dashboard.css"; 
 import "../styles/materials.css"; 
 
 export default function Materials() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const navigate = useNavigate(); // ✅ Hook for navigation
+  const navigate = useNavigate();
 
-  // State to hold all materials (Starts empty)
   const [materials, setMaterials] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Load Data
+  // Load materials from backend
   useEffect(() => {
-    const savedNotes = JSON.parse(localStorage.getItem("myMaterials")) || [];
-    setMaterials(savedNotes);
-  }, []);
+    const loadMaterials = async () => {
+      try {
+        const storedUser = localStorage.getItem("teknotesUser");
+        if (!storedUser) {
+          Swal.fire({
+            icon: 'warning',
+            title: 'Not Logged In',
+            text: 'Please login to view materials',
+          });
+          navigate('/login');
+          return;
+        }
+
+        const user = JSON.parse(storedUser);
+        const userId = user.id || user.userId;
+
+        // Fetch user's resources from backend
+        const resources = await ApiService.getUserResources(userId);
+        setMaterials(resources);
+        
+        Swal.fire({
+          icon: 'success',
+          title: 'Materials Loaded',
+          text: `Successfully loaded ${resources.length} materials`,
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } catch (err) {
+        console.error("Error loading materials:", err);
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Failed to load materials: ' + err.message
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadMaterials();
+  }, [navigate]);
 
   // Stats
   const stats = [
@@ -41,6 +82,70 @@ export default function Materials() {
   const handlePreview = (item) => {
     // Navigate to /preview and pass the item data in state
     navigate(`/preview/${item.id}`, { state: { file: item } });
+  };
+
+  // Handle Bookmark
+  const handleBookmark = async (item) => {
+    try {
+      const storedUser = localStorage.getItem("teknotesUser");
+      if (!storedUser) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Please Login',
+          text: 'You need to login to bookmark resources',
+        });
+        return;
+      }
+
+      const user = JSON.parse(storedUser);
+      const userId = user.id || user.userId;
+
+      const bookmarkData = {
+        user: { userId: userId },
+        resource: { resourceId: item.id },
+        saveDate: new Date().toISOString()
+      };
+
+      await ApiService.createBookmark(bookmarkData);
+      
+      Swal.fire({
+        icon: 'success',
+        title: 'Bookmarked!',
+        text: 'Resource added to your bookmarks',
+        timer: 2000,
+        showConfirmButton: false
+      });
+    } catch (err) {
+      console.error("Error bookmarking:", err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to bookmark resource'
+      });
+    }
+  };
+
+  // Handle Download
+  const handleDownload = async (item) => {
+    try {
+      Swal.fire({
+        icon: 'success',
+        title: 'Download Started',
+        text: `Downloading ${item.title}`,
+        timer: 2000,
+        showConfirmButton: false
+      });
+      
+      // Here you would typically trigger actual file download
+      // window.open(item.fileUrl, '_blank');
+    } catch (err) {
+      console.error("Error downloading:", err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to download resource'
+      });
+    }
   };
 
   return (
@@ -112,25 +217,25 @@ export default function Materials() {
                     </div>
                     <div className="card-header-text">
                       <h4>{item.title}</h4>
-                      <p className="card-desc">{item.description}</p>
+                      <p className="card-desc">{item.tagDescription || item.description || 'No description'}</p>
                     </div>
                   </div>
 
                   <div className="card-meta-row">
                     <div className="author-info">
                       <User size={14} />
-                      <span>{item.instructor}</span>
+                      <span>{item.teacherName || 'Unknown'}</span>
                       <span className="dot">🗓️</span>
-                      <span>{item.date}</span>
+                      <span>{item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'N/A'}</span>
                     </div>
                     <div className="stats-info">
                       <span className="rating-badge">
                         <Star size={12} fill="#fbbf24" stroke="none" />
-                        {item.rating || "New"}
+                        {item.averageRating || "0.0"}
                       </span>
                       <span className="download-count">
                         <Download size={12} />
-                        {item.downloadCount}
+                        {item.downloadCount || 0}
                       </span>
                     </div>
                   </div>
@@ -143,13 +248,16 @@ export default function Materials() {
                       <span>Uploaded by {item.uploadedBy}</span>
                     </div>
                     <div className="card-buttons">
-                      {/* ✅ UPDATED: Preview Button */}
                       <button className="preview-btn" onClick={() => handlePreview(item)}>
                         Preview
                       </button>
                       
-                      <button className="download-action-btn">
-                        <Download size={14} /> Downloads
+                      <button className="download-action-btn" onClick={() => handleBookmark(item)}>
+                        <Bookmark size={14} /> Save
+                      </button>
+                      
+                      <button className="download-action-btn" onClick={() => handleDownload(item)}>
+                        <Download size={14} /> Download
                       </button>
                     </div>
                   </div>

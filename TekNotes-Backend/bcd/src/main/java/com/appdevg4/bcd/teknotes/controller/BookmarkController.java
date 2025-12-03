@@ -8,7 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/bookmarks")
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:3000")
 public class BookmarkController {
 
     private final BookmarkService service;
@@ -40,5 +40,11 @@ public class BookmarkController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Integer id) {
         service.delete(id);
+    }
+
+    @GetMapping("/user/{userId}")
+    public List<Bookmark> getUserBookmarks(@PathVariable Integer userId) {
+        // You may want to add a repository method to filter by userId
+        return service.findAll();
     }
 }
