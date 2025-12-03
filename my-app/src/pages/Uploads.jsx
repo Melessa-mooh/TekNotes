@@ -14,6 +14,7 @@ import {
 import Sidebar from "../components/Sidebar";
 import "../styles/dashboard.css";
 import "../styles/uploads.css";
+import ApiService from "../services/api";
 
 export default function Uploads() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -123,26 +124,13 @@ export default function Uploads() {
       form.append("tags", formData.tags || "");
       form.append("userId", userId);
 
-      const res = await fetch(
-        "http://localhost:8080/api/resources/upload",
-        {
-          method: "POST",
-          body: form,
-        }
-      );
-
-      if (!res.ok) {
-        const msg = await res.text();
-        console.error("Upload failed:", msg);
-        alert("Upload failed. Please try again.");
-        return;
-      }
+      const data = await ApiService.uploadResource(form);
 
       alert("Upload successful!");
       navigate("/materials");
     } catch (err) {
       console.error(err);
-      alert("There was an error uploading your file.");
+      alert("There was an error uploading your file: " + err.message);
     }
   };
 

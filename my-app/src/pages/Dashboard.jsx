@@ -15,6 +15,7 @@ import {
 
 import Sidebar from "../components/Sidebar";
 import ResourceCard from "../components/ResourceCard";
+import ApiService from "../services/api";
 
 export default function Dashboard() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -54,16 +55,7 @@ export default function Dashboard() {
   // ===== Load dashboard data from backend =====
   const loadDashboardData = async (userId) => {
     try {
-      const res = await fetch(
-        `http://localhost:8080/api/dashboard/overview?userId=${userId}`
-      );
-
-      if (!res.ok) {
-        console.error("Failed to fetch dashboard data");
-        return;
-      }
-
-      const data = await res.json();
+      const data = await ApiService.getDashboardOverview(userId);
 
       setStats([
         {
@@ -93,6 +85,7 @@ export default function Dashboard() {
       setRecentDownloads(data.recentDownloads || []);
     } catch (err) {
       console.error("Error loading dashboard data:", err);
+      alert("Failed to load dashboard data. Please try again.");
     }
   };
 
@@ -109,25 +102,18 @@ export default function Dashboard() {
     const init = async () => {
       try {
         // 1. Get latest user data from backend (MySQL)
-        const res = await fetch(
-          `http://localhost:8080/api/users/${userId}`
-        );
+        const userData = await ApiService.getUserProfile(userId);
 
-        if (res.ok) {
-          const userData = await res.json();
+        // try both firstName and first_name depending on your DTO
+        const first =
+          userData.firstName ||
+          userData.first_name ||
+          "";
 
-          // try both firstName and first_name depending on your DTO
-          const first =
-            userData.firstName ||
-            userData.first_name ||
-            "";
-
-          setFullName(first);
-        } else {
-          console.error("Failed to fetch user profile");
-        }
+        setFullName(first);
       } catch (err) {
         console.error("Error fetching user profile:", err);
+        alert("Failed to load user profile. Please try again.");
       }
 
       // 2. Load dashboard stats using same userId

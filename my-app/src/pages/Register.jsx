@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/auth.css";
+import ApiService from "../services/api";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -43,28 +44,20 @@ export default function Register() {
     }
 
     try {
-      const res = await fetch("http://localhost:8080/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          firstName: form.firstName,
-          lastName: form.lastName,
-          email: form.email,
-          password: form.password,
-        }),
-      });
-
-      if (!res.ok) {
-        const message = await res.text();
-        alert("Registration failed: " + message);
-        return;
-      }
-
+      const userData = {
+        firstName: form.firstName,
+        lastName: form.lastName,
+        email: form.email,
+        password: form.password,
+      };
+      
+      await ApiService.register(userData);
+      
       alert("Registered successfully!");
       navigate("/login");
     } catch (err) {
       console.error(err);
-      alert("Server error. Please try again.");
+      alert("Registration failed: " + err.message);
     }
   };
 

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import "../styles/auth.css";
+import ApiService from "../services/api";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -18,23 +19,7 @@ export default function Login() {
     e.preventDefault();
 
     try {
-      const res = await fetch("http://localhost:8080/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-
-      if (res.status === 401) {
-        alert("Invalid email or password");
-        return;
-      }
-
-      if (!res.ok) {
-        alert("Login failed");
-        return;
-      }
-
-      const user = await res.json();
+      const user = await ApiService.login(formData);
 
       // Make sure we have an id/userId (coming from MySQL via backend)
       const userId = user.id ?? user.userId;
@@ -51,7 +36,11 @@ export default function Login() {
       navigate("/dashboard");
     } catch (err) {
       console.error(err);
-      alert("Server error. Please try again.");
+      if (err.message.includes('401')) {
+        alert("Invalid email or password");
+      } else {
+        alert("Server error. Please try again.");
+      }
     }
   };
 
