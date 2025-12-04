@@ -11,7 +11,8 @@ import {
   Heart, 
   FileText, 
   Star, 
-  Download
+  Download,
+  Trash2 // <--- 1. ADD IMPORT HERE
 } from "lucide-react";
 import Swal from 'sweetalert2';
 
@@ -72,6 +73,31 @@ export default function Downloads() {
     { label: "Folders", count: 5, icon: Folder, color: "yellow" },
     { label: "Total Downloads", count: downloads.length, icon: Heart, color: "green" }, // Dynamic count
   ];
+
+  // ✅ 2. ADDED DELETE FUNCTION
+  const handleDelete = async (e, itemId) => {
+    e.stopPropagation(); // Stop click from bubbling up
+    
+    const result = await Swal.fire({
+      title: 'Remove Download?',
+      text: "This will remove this item from your downloads list.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, remove it!'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        // await ApiService.deleteDownload(itemId); // API Call
+        setDownloads(prev => prev.filter(item => item.id !== itemId)); // Update UI
+        Swal.fire('Removed!', 'Item removed from downloads.', 'success');
+      } catch (err) {
+        Swal.fire('Error', 'Failed to remove item.', 'error');
+      }
+    }
+  };
 
   return (
     <div className="dashboard-container">
@@ -135,6 +161,27 @@ export default function Downloads() {
               downloads.map((item) => (
                 <div key={item.id} className="download-card-large">
                   
+                  {/* --- 3. ADDED DELETE BUTTON --- */}
+                  <button 
+                    onClick={(e) => handleDelete(e, item.id)}
+                    style={{
+                        position: 'absolute',
+                        top: '15px',
+                        right: '15px',
+                        background: 'transparent',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: '#94a3b8',
+                        zIndex: 10
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = '#ef4444'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = '#94a3b8'}
+                    title="Remove Download"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                  {/* ----------------------------- */}
+
                   {/* File Icon + Title Block */}
                   <div className="card-top">
                     <div className="file-icon-red">

@@ -1,10 +1,21 @@
 import React from "react";
-import { FileText, User, Star, Download } from "lucide-react";
+import { FileText, User, Star, Download, MessageCircle } from "lucide-react"; // ✅ Added MessageCircle
 
-export default function SearchCard({ data, onRate, onDownload, onPreview }) {
+export default function SearchCard({ data, onRate, onDownload, onPreview, onCommentClick }) { // ✅ Added onCommentClick
   return (
-    <div className="search-card-item">
+    // ✅ Added style={{ position: 'relative' }} to ensure the button stays inside the card
+    <div className="search-card-item" style={{ position: 'relative' }}>
       
+      {/* --- NEW COMMENT BUTTON (UPPER RIGHT) --- */}
+      <button 
+        className="comment-corner-btn" 
+        onClick={() => onCommentClick && onCommentClick(data)}
+        title="View Comments"
+      >
+        <MessageCircle size={18} />
+        <span className="comment-count">{data.reviews || 0}</span>
+      </button>
+
       {/* Top Section: Icon + Text */}
       <div className="card-header-section">
         <div className="file-icon-wrapper">
@@ -54,7 +65,6 @@ export default function SearchCard({ data, onRate, onDownload, onPreview }) {
             <Star size={14} /> Rate
           </button>
           
-          {/* ✅ UPDATED: Preview Button */}
           <button className="btn-preview" onClick={() => onPreview(data)}>
             Preview
           </button>
