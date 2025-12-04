@@ -258,3 +258,42 @@
     align-items: stretch;
   }
 }
+/* 1. Modify existing material-card to allow absolute positioning inside it */
+.material-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: all 0.2s;
+  
+  /* ADD THIS LINE: */
+  position: relative; 
+}
+
+/* 2. Add the new Delete Button style */
+.delete-icon-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  color: #94a3b8; /* Gray by default */
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.delete-icon-btn:hover {
+  background-color: #fee2e2; /* Light red background */
+  color: #ef4444; /* Red icon */
+}
+
+/* Optional: Ensure long titles don't overlap the button */
+.card-header-text {
+  padding-right: 20px;
+}

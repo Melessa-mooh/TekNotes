@@ -11,7 +11,8 @@ import {
   Star,
   CheckCircle,
   File,
-  Bookmark
+  Bookmark,
+  Trash2 
 } from "lucide-react";
 import Swal from 'sweetalert2';
 
@@ -26,6 +27,9 @@ export default function Materials() {
 
   const [materials, setMaterials] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // 1. ADD SEARCH STATE
+  const [searchTerm, setSearchTerm] = useState("");
 
   // Load materials from backend
   useEffect(() => {
@@ -71,17 +75,55 @@ export default function Materials() {
     loadMaterials();
   }, [navigate]);
 
-  // Stats
+  // 2. CREATE FILTER LOGIC
+  // This checks if the Search Term exists in the Title OR the Description
+  const filteredMaterials = materials.filter((item) => {
+    if (!searchTerm) return true; // Show all if search is empty
+    
+    const lowerTerm = searchTerm.toLowerCase();
+    const titleMatch = item.title?.toLowerCase().includes(lowerTerm);
+    const descMatch = item.description?.toLowerCase().includes(lowerTerm) || 
+                      item.tagDescription?.toLowerCase().includes(lowerTerm);
+    
+    return titleMatch || descMatch;
+  });
+
+
+  // Stats (Using filteredMaterials.length so stats update when you search)
   const stats = [
     { label: "Total Notes", count: materials.length, icon: File, color: "gray" },
     { label: "Download", count: 0, icon: Download, color: "gray" },
     { label: "Published", count: materials.length, icon: CheckCircle, color: "gray" },
   ];
 
-  // ✅ Handle Preview Click
+  // Handle Preview Click
   const handlePreview = (item) => {
-    // Navigate to /preview and pass the item data in state
     navigate(`/preview/${item.id}`, { state: { file: item } });
+  };
+
+  // Handle Delete Action
+  const handleDelete = async (e, itemId) => {
+    e.stopPropagation(); 
+    
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!'
+    });
+
+    if (result.isConfirmed) {
+      try {
+        // await ApiService.deleteResource(itemId); // Uncomment when API is ready
+        setMaterials(prev => prev.filter(item => item.id !== itemId)); 
+        Swal.fire('Deleted!', 'Your file has been deleted.', 'success');
+      } catch (err) {
+        Swal.fire('Error', 'Failed to delete file.', 'error');
+      }
+    }
   };
 
   // Handle Bookmark
@@ -90,13 +132,12 @@ export default function Materials() {
       const storedUser = localStorage.getItem("teknotesUser");
       if (!storedUser) {
         Swal.fire({
-          icon: 'warning',
-          title: 'Please Login',
-          text: 'You need to login to bookmark resources',
+            icon: 'warning',
+            title: 'Please Login',
+            text: 'You need to login to bookmark resources',
         });
         return;
       }
-
       const user = JSON.parse(storedUser);
       const userId = user.id || user.userId;
 
@@ -135,9 +176,6 @@ export default function Materials() {
         timer: 2000,
         showConfirmButton: false
       });
-      
-      // Here you would typically trigger actual file download
-      // window.open(item.fileUrl, '_blank');
     } catch (err) {
       console.error("Error downloading:", err);
       Swal.fire({
@@ -192,7 +230,15 @@ export default function Materials() {
           <div className="materials-toolbar">
             <div className="search-bar-material">
               <Search size={18} className="search-icon" />
-              <input type="text" placeholder="Search materials..." />
+              
+              {/* 3. CONNECT INPUT TO STATE */}
+              <input 
+                type="text" 
+                placeholder="Search materials..." 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            
             </div>
             <div className="toolbar-right">
               <select className="subject-select">
@@ -207,10 +253,30 @@ export default function Materials() {
 
           {/* Materials Grid */}
           <div className="materials-grid">
-            {materials.length > 0 ? (
-              materials.map((item) => (
-                <div key={item.id} className="material-card">
+            {/* 4. USE filteredMaterials INSTEAD OF materials */}
+            {filteredMaterials.length > 0 ? (
+              filteredMaterials.map((item) => (
+                <div key={item.id} className="material-card" style={{ position: 'relative' }}>
                   
+                  <button 
+                    onClick={(e) => handleDelete(e, item.id)}
+                    style={{
+                        position: 'absolute',
+                        top: '15px',
+                        right: '15px',
+                        background: 'transparent',
+                        border: 'none',
+                        cursor: 'pointer',
+                        color: '#94a3b8',
+                        zIndex: 10
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.color = '#ef4444'}
+                    onMouseLeave={(e) => e.currentTarget.style.color = '#94a3b8'}
+                    title="Delete Note"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+
                   <div className="card-top">
                     <div className="file-icon-red">
                       <FileText size={24} />
@@ -266,7 +332,7 @@ export default function Materials() {
               ))
             ) : (
               <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "40px", color: "#64748b" }}>
-                <p>No materials found. Upload your first note!</p>
+                <p>No materials found matching "{searchTerm}".</p>
               </div>
             )}
           </div>
