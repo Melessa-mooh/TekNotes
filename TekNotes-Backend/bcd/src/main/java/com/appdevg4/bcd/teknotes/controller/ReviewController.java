@@ -1,5 +1,6 @@
 package com.appdevg4.bcd.teknotes.controller;
 
+import com.appdevg4.bcd.teknotes.dto.ReviewRequest;
 import com.appdevg4.bcd.teknotes.entity.Review;
 import com.appdevg4.bcd.teknotes.service.ReviewService;
 import org.springframework.web.bind.annotation.*;
@@ -8,7 +9,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/reviews")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class ReviewController {
 
     private final ReviewService service;
@@ -17,9 +18,10 @@ public class ReviewController {
         this.service = service;
     }
 
+    
     @PostMapping
-    public Review create(@RequestBody Review review) {
-        return service.create(review);
+    public Review create(@RequestBody ReviewRequest request) {
+        return service.create(request);
     }
 
     @GetMapping
@@ -32,11 +34,6 @@ public class ReviewController {
         return service.findById(id);
     }
 
-    @PutMapping("/{id}")
-    public Review update(@PathVariable Integer id, @RequestBody Review review) {
-        return service.update(id, review);
-    }
-
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Integer id) {
         service.delete(id);
@@ -44,13 +41,11 @@ public class ReviewController {
 
     @GetMapping("/user/{userId}")
     public List<Review> getUserReviews(@PathVariable Integer userId) {
-        // You may want to add a repository method to filter by userId
-        return service.findAll();
+        return service.findByUserId(userId);
     }
 
     @GetMapping("/resource/{resourceId}")
     public List<Review> getResourceReviews(@PathVariable Integer resourceId) {
-        // You may want to add a repository method to filter by resourceId
-        return service.findAll();
+        return service.findByResourceId(resourceId);
     }
 }
