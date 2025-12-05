@@ -8,7 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class UserController {
 
     private final UserService service;
@@ -34,7 +34,16 @@ public class UserController {
 
     @PutMapping("/{id}")
     public User update(@PathVariable Integer id, @RequestBody User user) {
-        return service.update(id, user);
+        User existing = service.findById(id);
+        // Only update provided fields
+        if (user.getFirstName() != null) existing.setFirstName(user.getFirstName());
+        if (user.getLastName() != null) existing.setLastName(user.getLastName());
+        if (user.getEmail() != null) existing.setEmail(user.getEmail());
+        if (user.getStudyPreferences() != null) existing.setStudyPreferences(user.getStudyPreferences());
+        if (user.getPassword() != null && !user.getPassword().isBlank()) {
+            existing.setPassword(user.getPassword());
+        }
+        return service.update(id, existing);
     }
 
     @DeleteMapping("/{id}")

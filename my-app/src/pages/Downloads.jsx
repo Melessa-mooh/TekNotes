@@ -12,12 +12,13 @@ import {
   FileText, 
   Star, 
   Download,
-  Trash2 // <--- 1. ADD IMPORT HERE
+  Trash2
 } from "lucide-react";
 import Swal from 'sweetalert2';
 
 import Sidebar from "../components/Sidebar";
 import ApiService from "../services/api";
+import ReviewsModal from "../components/ReviewsModal";
 import "../styles/dashboard.css"; 
 import "../styles/downloads.css"; 
 
@@ -25,9 +26,12 @@ export default function Downloads() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [downloads, setDownloads] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [selectedResource, setSelectedResource] = useState(null);
+  const [showReviewsModal, setShowReviewsModal] = useState(false);
   const navigate = useNavigate();
 
-  // Load downloads from backend (all resources)
+  // Load user downloads from backend
   useEffect(() => {
     const loadDownloads = async () => {
       try {
@@ -42,17 +46,56 @@ export default function Downloads() {
           return;
         }
 
-        // Fetch all available resources from backend
-        const allResources = await ApiService.getAllResources();
-        setDownloads(allResources);
+        const user = JSON.parse(storedUser);
+        const userId = user.userId || user.id;
+        setCurrentUserId(userId);
+
+        if (!userId) {
+          Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'User ID not found'
+          });
+          return;
+        }
+
+        // Fetch user's downloads from backend
+        const downloadsData = await ApiService.getUserDownloads(userId);
         
-        Swal.fire({
-          icon: 'success',
-          title: 'Downloads Available',
-          text: `${allResources.length} resources available for download`,
-          timer: 2000,
-          showConfirmButton: false
+        // Extract resource data from downloads
+        // Backend returns: { id: downloadId, downloadDate, resource: ResourceSummaryDto }
+        const downloadResources = downloadsData.map(d => {
+          const resource = d.resource || {};
+          const downloadDate = d.downloadDate ? new Date(d.downloadDate).toLocaleDateString() : 'Recently';
+          
+          // Check if uploader is current user
+          const isMyUpload = userId && resource.uploaderUserId === userId;
+          const uploaderDisplay = isMyUpload ? "You" : (resource.uploaderName || resource.professor || resource.teacherName || 'Unknown');
+          
+          return {
+            id: resource.id || resource.resourceId, // Resource ID for display
+            downloadId: d.id, // Download record ID for deletion
+            title: resource.title || 'Untitled',
+            description: resource.tagDescription || resource.description || '',
+            subject: resource.subject || resource.courseName || 'General',
+            professor: resource.professor || resource.teacherName || 'Unknown',
+            fileType: resource.fileType || 'FILE',
+            rating: resource.rating || 0,
+            downloads: resource.downloads || 0,
+            downloadedAt: downloadDate,
+            uploadTime: resource.uploadTime || downloadDate,
+            date: downloadDate,
+            author: resource.professor || resource.teacherName || 'Unknown',
+            instructor: resource.professor || resource.teacherName || 'Unknown',
+          uploadedBy: uploaderDisplay,
+          uploaderUserId: resource.uploaderUserId,
+          uploaderName: resource.uploaderName,
+          reviewCount: resource.reviews || resource.reviewCount || 0,
+          downloadCount: resource.downloads || resource.downloadCount || 0
+        };
         });
+        
+        setDownloads(downloadResources);
       } catch (err) {
         console.error("Error loading downloads:", err);
         Swal.fire({
@@ -67,6 +110,50 @@ export default function Downloads() {
 
     loadDownloads();
   }, [navigate]);
+
+  // Refresh downloads when component comes into focus (user navigates back)
+  useEffect(() => {
+    const handleFocus = () => {
+      const storedUser = localStorage.getItem("teknotesUser");
+      if (storedUser) {
+        const user = JSON.parse(storedUser);
+        const userId = user.userId || user.id;
+        if (userId) {
+          // Silently refresh downloads
+          ApiService.getUserDownloads(userId)
+            .then(downloadsData => {
+              const downloadResources = downloadsData.map(d => {
+                const resource = d.resource || {};
+                const downloadDate = d.downloadDate ? new Date(d.downloadDate).toLocaleDateString() : 'Recently';
+                
+                return {
+                  id: resource.id || resource.resourceId,
+                  downloadId: d.id,
+                  title: resource.title || 'Untitled',
+                  description: resource.tagDescription || resource.description || '',
+                  subject: resource.subject || resource.courseName || 'General',
+                  professor: resource.professor || resource.teacherName || 'Unknown',
+                  fileType: resource.fileType || 'FILE',
+                  rating: resource.rating || 0,
+                  downloads: resource.downloads || 0,
+                  downloadedAt: downloadDate,
+                  uploadTime: resource.uploadTime || downloadDate,
+                  date: downloadDate,
+                  author: resource.professor || resource.teacherName || 'Unknown',
+                  instructor: resource.professor || resource.teacherName || 'Unknown',
+                  uploadedBy: resource.professor || resource.teacherName || 'Unknown'
+                };
+              });
+              setDownloads(downloadResources);
+            })
+            .catch(err => console.error("Error refreshing downloads:", err));
+        }
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, []);
 
   const stats = [
     { label: "Reviews Written", count: 5, icon: Bookmark, color: "red" },
@@ -90,11 +177,15 @@ export default function Downloads() {
 
     if (result.isConfirmed) {
       try {
-        // await ApiService.deleteDownload(itemId); // API Call
-        setDownloads(prev => prev.filter(item => item.id !== itemId)); // Update UI
+        // Find the download ID from the item
+        const item = downloads.find(d => d.id === itemId);
+        if (item && item.downloadId) {
+          await ApiService.deleteDownload(item.downloadId);
+        }
+        setDownloads(prev => prev.filter(d => d.id !== itemId)); // Update UI
         Swal.fire('Removed!', 'Item removed from downloads.', 'success');
       } catch (err) {
-        Swal.fire('Error', 'Failed to remove item.', 'error');
+        Swal.fire('Error', 'Failed to remove item: ' + err.message, 'error');
       }
     }
   };
@@ -112,7 +203,9 @@ export default function Downloads() {
             <h1 className="page-title">Downloads</h1>
           </div>
           <div className="header-right">
-            <button className="upload-btn"><Upload size={18} /> Upload</button>
+            <button className="upload-btn" onClick={() => navigate('/uploads')}>
+              <Upload size={18} /> Upload
+            </button>
             <button className="icon-btn"><Bell size={20} /></button>
             <button className="icon-btn"><User size={20} /></button>
           </div>
@@ -198,19 +291,26 @@ export default function Downloads() {
                     <div className="author-info">
                       <User size={14} />
                       {/* Handle different data structures (uploaded vs public) */}
-                      <span>{item.author || item.instructor || "Unknown"}</span>
+                      <span>{item.author || item.professor || item.instructor || "Unknown"}</span>
                       <span className="dot">•</span>
-                      <span>{item.date || item.uploadTime || item.downloadedAt}</span>
+                      <span>Downloaded: {item.downloadedAt || item.date || item.uploadTime || 'Recently'}</span>
                     </div>
                     <div className="stats-info">
-                      <span className="rating-badge">
+                      <span 
+                        className="rating-badge" 
+                        onClick={() => {
+                          setSelectedResource(item);
+                          setShowReviewsModal(true);
+                        }}
+                        style={{ cursor: 'pointer' }}
+                        title="Click to view all reviews and comments"
+                      >
                         <Star size={12} fill="#fbbf24" stroke="none" />
-                        {item.rating || 0}
+                        {item.rating || 0} ({item.reviews || item.reviewCount || 0} reviews)
                       </span>
                       <span className="download-count">
                         <Download size={12} />
-                        {/* Fallback to 1 if just downloaded */}
-                        {item.downloads || item.downloadCount || 1}
+                        {item.downloads || item.downloadCount || 0} downloads
                       </span>
                     </div>
                   </div>
@@ -222,9 +322,40 @@ export default function Downloads() {
                         <div style={{width:'100%', height:'100%', background:'#ddd', borderRadius:'50%'}}></div>
                       </div>
                       <span>Uploaded by {item.uploadedBy || "System"}</span>
+                      {currentUserId && item.uploaderUserId === currentUserId && (
+                        <span style={{ marginLeft: '8px', fontSize: '11px', color: '#5C0000', fontWeight: 'bold' }}>• Your Resource</span>
+                      )}
                     </div>
                     <div className="card-buttons">
-                      <button className="preview-btn">Preview</button>
+                      <button 
+                        className="preview-btn" 
+                        onClick={() => {
+                          const description = item.description || item.tagDescription || 'No description available.';
+                          Swal.fire({
+                            title: item.title,
+                            html: `
+                              <div style="text-align: left; padding: 10px;">
+                                <p><strong>Subject:</strong> ${item.subject || item.courseName || 'N/A'}</p>
+                                <p><strong>Professor:</strong> ${item.professor || item.teacherName || 'N/A'}</p>
+                                <p><strong>File Type:</strong> ${item.fileType || 'N/A'}</p>
+                                <p><strong>Description:</strong></p>
+                                <p style="margin-top: 10px; padding: 10px; background: #f8fafc; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word;">
+                                  ${description}
+                                </p>
+                                <p style="margin-top: 10px;"><strong>Rating:</strong> ${item.rating || 0} (${item.reviews || item.reviewCount || 0} reviews)</p>
+                                <p><strong>Downloads:</strong> ${item.downloads || item.downloadCount || 0}</p>
+                                <p style="margin-top: 10px; font-size: 12px; color: #64748b;"><strong>Uploaded by:</strong> ${item.uploadedBy || item.uploaderName || 'Unknown'}</p>
+                              </div>
+                            `,
+                            width: '600px',
+                            showCloseButton: true,
+                            showConfirmButton: true,
+                            confirmButtonText: 'Close'
+                          });
+                        }}
+                      >
+                        Preview
+                      </button>
                       <button className="download-action-btn">
                         <Download size={14} /> Downloaded
                       </button>
@@ -243,6 +374,17 @@ export default function Downloads() {
           </div>
 
         </div>
+
+        <ReviewsModal
+          isOpen={showReviewsModal}
+          onClose={() => {
+            setShowReviewsModal(false);
+            setSelectedResource(null);
+          }}
+          resourceId={selectedResource?.id}
+          resourceTitle={selectedResource?.title}
+          currentUserId={currentUserId}
+        />
       </main>
     </div>
   );

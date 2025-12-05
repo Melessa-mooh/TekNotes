@@ -46,6 +46,9 @@ public class Resource {
     @OneToMany(mappedBy = "resource", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Bookmark> bookmarks = new ArrayList<>();
 
+    @OneToMany(mappedBy = "resource", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Download> downloads = new ArrayList<>();
+
     public Resource() {
     }
 
@@ -129,5 +132,13 @@ public class Resource {
 
     public void setBookmarks(List<Bookmark> bookmarks) {
         this.bookmarks = bookmarks;
+    }
+
+    public List<Download> getDownloads() {
+        return downloads;
+    }
+
+    public void setDownloads(List<Download> downloads) {
+        this.downloads = downloads;
     }
 }

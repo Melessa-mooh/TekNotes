@@ -13,29 +13,62 @@ import {
   Bookmark,
   Edit3,
 } from "lucide-react";
+import ApiService from "../services/api";
+import Swal from "sweetalert2";
+import { useNavigate } from "react-router-dom";
 
 export default function ProfileSettings() {
+  const navigate = useNavigate();
   const [fullName, setFullName] = useState("Mavis Izumi");
   const [email, setEmail] = useState("mavisizumi@gmail.com");
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [profilePic, setProfilePic] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [studyPreferences, setStudyPreferences] = useState("");
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   // Load saved data on mount
   useEffect(() => {
-    const savedFullName = localStorage.getItem("userFullName");
-    const savedEmail = localStorage.getItem("userEmail");
-    const savedFirstName = localStorage.getItem("userFirstName");
-    const savedLastName = localStorage.getItem("userLastName");
-    const savedProfilePic = localStorage.getItem("userProfilePic");
+    const storedUser = localStorage.getItem("teknotesUser");
+    if (!storedUser) {
+      navigate("/login");
+      return;
+    }
+    const user = JSON.parse(storedUser);
+    const userId = user.id || user.userId;
+    setCurrentUserId(userId);
 
-    if (savedFullName) setFullName(savedFullName);
-    if (savedEmail) setEmail(savedEmail);
-    if (savedFirstName) setFirstName(savedFirstName);
-    if (savedLastName) setLastName(savedLastName);
-    if (savedProfilePic) setProfilePic(savedProfilePic);
-  }, []);
+    // Load user data from backend
+    const loadUserData = async () => {
+      try {
+        const userData = await ApiService.getUserProfile(userId);
+        setFirstName(userData.firstName || "");
+        setLastName(userData.lastName || "");
+        setEmail(userData.email || "");
+        setFullName(`${userData.firstName || ""} ${userData.lastName || ""}`);
+        setStudyPreferences(userData.studyPreferences || "");
+      } catch (error) {
+        console.error("Error loading user data:", error);
+        // Fallback to localStorage
+        const savedFullName = localStorage.getItem("userFullName");
+        const savedEmail = localStorage.getItem("userEmail");
+        const savedFirstName = localStorage.getItem("userFirstName");
+        const savedLastName = localStorage.getItem("userLastName");
+        const savedProfilePic = localStorage.getItem("userProfilePic");
+        const savedPreferences = localStorage.getItem("studyPreferences");
+
+        if (savedFullName) setFullName(savedFullName);
+        if (savedEmail) setEmail(savedEmail);
+        if (savedFirstName) setFirstName(savedFirstName);
+        if (savedLastName) setLastName(savedLastName);
+        if (savedProfilePic) setProfilePic(savedProfilePic);
+        if (savedPreferences) setStudyPreferences(savedPreferences);
+      }
+    };
+
+    loadUserData();
+  }, [navigate]);
 
   // Handle profile image upload
   const handleProfilePicUpload = (e) => {
@@ -51,17 +84,62 @@ export default function ProfileSettings() {
   };
 
   // Handle save changes
-  const handleSave = () => {
-    const updatedFullName = `${firstName} ${lastName}`;
-    setFullName(updatedFullName);
-    setIsEditing(false);
+  const handleSave = async () => {
+    if (!currentUserId) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "User ID not found",
+      });
+      return;
+    }
 
-    localStorage.setItem("userFullName", updatedFullName);
-    localStorage.setItem("userEmail", email);
-    localStorage.setItem("userFirstName", firstName);
-    localStorage.setItem("userLastName", lastName);
+    try {
+      // Update user profile including study preferences
+      const response = await fetch(`http://localhost:8080/api/users/${currentUserId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          firstName: firstName,
+          lastName: lastName,
+          email: email,
+          studyPreferences: studyPreferences
+        }),
+      });
 
-    alert("Profile updated successfully!");
+      if (!response.ok) {
+        throw new Error('Failed to update profile');
+      }
+
+      const updatedFullName = `${firstName} ${lastName}`;
+      setFullName(updatedFullName);
+      setIsEditing(false);
+
+      // Also save to localStorage as backup
+      localStorage.setItem("userFullName", updatedFullName);
+      localStorage.setItem("userEmail", email);
+      localStorage.setItem("userFirstName", firstName);
+      localStorage.setItem("userLastName", lastName);
+      localStorage.setItem("studyPreferences", studyPreferences);
+
+      Swal.fire({
+        icon: "success",
+        title: "Success!",
+        text: "Profile updated successfully",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+    } catch (error) {
+      console.error("Error updating profile:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error.message || "Failed to update profile",
+      });
+    }
   };
 
   return (
@@ -198,6 +276,31 @@ export default function ProfileSettings() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter email address"
               />
+            </div>
+
+            <h4 className="section-title" style={{ marginTop: "20px" }}>STUDY PREFERENCES</h4>
+
+            <div className="form-group">
+              <label>Study Preferences</label>
+              <textarea
+                value={studyPreferences}
+                disabled={!isEditing}
+                onChange={(e) => setStudyPreferences(e.target.value)}
+                placeholder="Enter your study preferences (e.g., preferred subjects, study times, learning style, etc.)"
+                rows={5}
+                style={{
+                  width: "100%",
+                  padding: "10px",
+                  borderRadius: "6px",
+                  border: "1px solid #cbd5e1",
+                  fontSize: "14px",
+                  fontFamily: "inherit",
+                  resize: "vertical",
+                }}
+              />
+              <p style={{ fontSize: "12px", color: "#64748b", marginTop: "5px" }}>
+                Share your study preferences to help us personalize your experience
+              </p>
             </div>
 
             <div className="form-buttons">

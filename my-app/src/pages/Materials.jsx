@@ -17,6 +17,7 @@ import {
 import Swal from 'sweetalert2';
 
 import Sidebar from "../components/Sidebar";
+import Header from "../components/Header";
 import ApiService from "../services/api";
 import "../styles/dashboard.css"; 
 import "../styles/materials.css"; 
@@ -98,7 +99,28 @@ export default function Materials() {
 
   // Handle Preview Click
   const handlePreview = (item) => {
-    navigate(`/preview/${item.id}`, { state: { file: item } });
+    const description = item.description || item.tagDescription || 'No description available.';
+    Swal.fire({
+      title: item.title,
+      html: `
+        <div style="text-align: left; padding: 10px;">
+          <p><strong>Subject:</strong> ${item.subject || item.courseName || 'N/A'}</p>
+          <p><strong>Professor:</strong> ${item.professor || item.teacherName || 'N/A'}</p>
+          <p><strong>File Type:</strong> ${item.fileType || 'N/A'}</p>
+          <p><strong>Description:</strong></p>
+          <p style="margin-top: 10px; padding: 10px; background: #f8fafc; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word;">
+            ${description}
+          </p>
+          <p style="margin-top: 10px;"><strong>Rating:</strong> ${item.averageRating || item.rating || 0} (${item.reviewCount || item.reviews || 0} reviews)</p>
+          <p><strong>Downloads:</strong> ${item.downloadCount || item.downloads || 0}</p>
+          <p style="margin-top: 10px; font-size: 12px; color: #64748b;"><strong>Uploaded by:</strong> You</p>
+        </div>
+      `,
+      width: '600px',
+      showCloseButton: true,
+      showConfirmButton: true,
+      confirmButtonText: 'Close'
+    });
   };
 
   // Handle Delete Action
@@ -141,18 +163,12 @@ export default function Materials() {
       const user = JSON.parse(storedUser);
       const userId = user.id || user.userId;
 
-      const bookmarkData = {
-        user: { userId: userId },
-        resource: { resourceId: item.id },
-        saveDate: new Date().toISOString()
-      };
-
-      await ApiService.createBookmark(bookmarkData);
+      const result = await ApiService.toggleBookmark(userId, item.id);
       
       Swal.fire({
         icon: 'success',
-        title: 'Bookmarked!',
-        text: 'Resource added to your bookmarks',
+        title: result ? 'Bookmarked!' : 'Removed!',
+        text: result ? 'Resource added to your bookmarks' : 'Resource removed from bookmarks',
         timer: 2000,
         showConfirmButton: false
       });
@@ -169,19 +185,62 @@ export default function Materials() {
   // Handle Download
   const handleDownload = async (item) => {
     try {
+      const storedUser = localStorage.getItem("teknotesUser");
+      if (!storedUser) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Please Login',
+          text: 'You need to login to download resources',
+        });
+        return;
+      }
+      
+      const user = JSON.parse(storedUser);
+      const userId = user.id || user.userId;
+      const resourceId = item.id || item.resourceId;
+
+      if (!userId || !resourceId) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Missing user or resource information'
+        });
+        return;
+      }
+
+      // Track the download in the backend
+      await ApiService.createDownload(userId, resourceId);
+
+      // Trigger actual file download if fileUrl exists
+      if (item.fileUrl) {
+        const fileUrl = item.fileUrl.startsWith('http') 
+          ? item.fileUrl 
+          : `http://localhost:8080${item.fileUrl}`;
+        const link = document.createElement('a');
+        link.href = fileUrl;
+        link.download = item.title || 'download';
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
       Swal.fire({
         icon: 'success',
         title: 'Download Started',
-        text: `Downloading ${item.title}`,
+        text: `${item.title} has been added to your downloads`,
         timer: 2000,
         showConfirmButton: false
       });
+
+      // Trigger a custom event to notify dashboard to refresh
+      window.dispatchEvent(new CustomEvent('downloadCompleted'));
     } catch (err) {
       console.error("Error downloading:", err);
       Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: 'Failed to download resource'
+        text: 'Failed to download resource: ' + err.message
       });
     }
   };
@@ -332,7 +391,11 @@ export default function Materials() {
               ))
             ) : (
               <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "40px", color: "#64748b" }}>
-                <p>No materials found matching "{searchTerm}".</p>
+                {searchTerm ? (
+                  <p>No materials found matching "{searchTerm}".</p>
+                ) : (
+                  <p>No recent uploads yet.</p>
+                )}
               </div>
             )}
           </div>

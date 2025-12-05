@@ -46,17 +46,23 @@ public class ReviewService {
         review.setRating(request.getRating());
         review.setComment(request.getComment());
         review.setCreatedAt(LocalDateTime.now());
+        review.setStatus("ACTIVE");
 
      
         return reviewRepository.save(review);
     }
 
     public List<Review> findAll() {
-        return reviewRepository.findAll();
+        return reviewRepository.findAllActive();
     }
 
     public Review findById(Integer id) {
-        return reviewRepository.findById(id).orElse(null);
+        Review review = reviewRepository.findById(id).orElse(null);
+        // Only return if not deleted
+        if (review != null && ("DELETED".equals(review.getStatus()))) {
+            return null;
+        }
+        return review;
     }
 
     public List<Review> findByUserId(Integer userId) {
@@ -70,17 +76,26 @@ public class ReviewService {
     public Review update(Integer id, Review updatedReview) {
         return reviewRepository.findById(id)
             .map(review -> {
+                // Don't allow updating deleted reviews
+                if ("DELETED".equals(review.getStatus())) {
+                    throw new RuntimeException("Cannot update a deleted review");
+                }
                 review.setRating(updatedReview.getRating());
                 review.setComment(updatedReview.getComment());
                 return reviewRepository.save(review);
             })
             .orElseGet(() -> {
                 updatedReview.setReviewId(id);
+                updatedReview.setStatus("ACTIVE");
                 return reviewRepository.save(updatedReview);
             });
     }
 
     public void delete(Integer id) {
-        reviewRepository.deleteById(id);
+        Review review = reviewRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Review not found: " + id));
+        // Soft delete - mark as DELETED instead of removing
+        review.setStatus("DELETED");
+        reviewRepository.save(review);
     }
 }

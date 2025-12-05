@@ -15,6 +15,7 @@ public class ResourceDto {
     private String courseName;
     private String courseCode;
     private String teacherName;
+    private String department;
 
     private String uploadedBy; // "First Last"
     private Integer uploaderId;
@@ -41,6 +42,7 @@ public class ResourceDto {
             dto.courseName = r.getCourse().getCourseName();
             dto.courseCode = r.getCourse().getCourseCode();
             dto.teacherName = r.getCourse().getTeacherName();
+            dto.department = r.getCourse().getDepartment();
         }
 
         // uploader info
