@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom"; // ✅ Added useNavigate
+import { useLocation, useNavigate } from "react-router-dom"; 
 import { 
   Search, 
   Upload, 
@@ -7,10 +7,12 @@ import {
   User, 
   Menu
 } from "lucide-react";
+import Swal from 'sweetalert2';
 
 import Sidebar from "../components/Sidebar";
 import SearchCard from "../components/SearchCard";
 import ReviewModal from "../components/ReviewModal"; 
+import ApiService from "../services/api"; 
 
 import "../styles/dashboard.css"; 
 import "../styles/search.css"; 
@@ -20,144 +22,134 @@ export default function SearchResources() {
   
   // Navigation Hooks
   const location = useLocation();
-  const navigate = useNavigate(); // ✅ Initialize navigation
+  const navigate = useNavigate();
   
   const initialQuery = location.state?.query || "";
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [activeCategory, setActiveCategory] = useState("All");
+  
+  // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedResource, setSelectedResource] = useState(null);
 
-  // Mock Data
-  const publicResources = [
-    { 
-      id: 101, 
-      title: "Introduction to Psychology", 
-      description: "Foundational concepts in behavioral science.",
-      subject: "Psychology", 
-      author: "Dr. Freud", 
-      fileType: "PDF", 
-      date: "2 days ago", 
-      rating: 4.5, 
-      reviews: 12, 
-      downloads: 150,
-      uploadedBy: "Admin"
-    },
-    { 
-      id: 102, 
-      title: "Organic Chemistry Basics", 
-      description: "Structures, bonding, and reactivity of organic molecules.",
-      subject: "Chemistry", 
-      author: "Prof. White", 
-      fileType: "PPT", 
-      date: "1 week ago", 
-      rating: 4.8, 
-      reviews: 45, 
-      downloads: 320,
-      uploadedBy: "Admin"
-    },
-    { 
-      id: 103, 
-      title: "Macroeconomics 101", 
-      description: "Study of the economy as a whole.",
-      subject: "Economics", 
-      author: "Dr. Keynes", 
-      fileType: "DOCX", 
-      date: "3 days ago", 
-      rating: 4.2, 
-      reviews: 8, 
-      downloads: 90,
-      uploadedBy: "Admin"
-    },
-    { 
-      id: 104, 
-      title: "Data Structures - Binary Trees", 
-      description: "Understanding tree data structures.",
-      subject: "Computer Science", 
-      author: "Prof. Anderson", 
-      fileType: "PDF", 
-      date: "2 hours ago", 
-      rating: 4.5, 
-      reviews: 23, 
-      downloads: 45,
-      uploadedBy: "Admin"
-    },
-  ];
+  // Data State
+  const [allResources, setAllResources] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const [allResources, setAllResources] = useState(publicResources);
-
+  // ✅ FETCH DATA & FIX UPLOADER NAME
   useEffect(() => {
-    const myUploads = JSON.parse(localStorage.getItem("myMaterials")) || [];
-    const formattedUploads = myUploads.map(upload => ({
-      id: upload.id,
-      title: upload.title,
-      description: upload.description,
-      subject: upload.course || "General", 
-      author: upload.instructor || "Unknown",
-      fileType: "PDF", 
-      date: upload.date,
-      rating: upload.rating || 0,
-      reviews: 0,
-      downloads: upload.downloadCount || 0,
-      uploadedBy: "Me"
-    }));
-    setAllResources([...formattedUploads, ...publicResources]);
+    const fetchResources = async () => {
+      try {
+        setLoading(true);
+        const data = await ApiService.getAllResources();
+
+        const resourcesArray = Array.isArray(data) ? data : [];
+        
+        // Map Backend Data -> Frontend UI Structure
+        const mappedData = resourcesArray.map((item) => ({
+          id: item.id,
+          title: item.title,
+          description: item.description,
+          subject: item.courseName || item.subject || "General", 
+          author: item.teacherName || item.author || "Unknown Instructor", 
+          fileType: item.fileType || "PDF", 
+          date: item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "Recently", 
+          rating: item.averageRating || 0, 
+          reviews: item.reviewCount || 0, 
+          downloads: item.downloads || 0,
+          
+          // ✅ FIX: Check for the direct string first, then nested object
+          uploadedBy: item.uploadedBy || item.user?.username || "Community"
+        }));
+
+        setAllResources(mappedData);
+      } catch (error) {
+        console.error("Error fetching resources:", error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Connection Error',
+          text: error.message || 'Could not load resources.'
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchResources();
   }, []);
 
+  // Filter Logic
   const filteredResources = allResources.filter((item) => {
     const query = searchQuery.toLowerCase();
-    const matchesSearch = item.title?.toLowerCase().includes(query) || item.subject?.toLowerCase().includes(query);
+    
+    // Safety check
+    const title = item.title ? item.title.toLowerCase() : "";
+    const subject = item.subject ? item.subject.toLowerCase() : "";
+    
+    const matchesSearch = title.includes(query) || subject.includes(query);
     const matchesCategory = activeCategory === "All" || item.subject === activeCategory;
+    
     return matchesSearch && matchesCategory;
   });
 
-  // Handlers
+  // Handle Opening Rate Modal
   const handleRateClick = (resource) => {
     setSelectedResource(resource);
     setIsModalOpen(true);
   };
 
-  const handleReviewSubmit = (reviewData) => {
+  // Submit Review to Backend
+  const handleReviewSubmit = async (reviewData) => {
     if (!selectedResource) return;
-    const newReview = {
-      id: Date.now(),
-      title: selectedResource.title,
-      subject: selectedResource.subject,
-      professor: selectedResource.author,
-      content: reviewData.comment,
-      rating: parseInt(reviewData.rating),
-      likes: 0, 
-      comments: 0,
-      isMyReview: true,
-      reviewTime: "Just now"
-    };
-    const existingReviews = JSON.parse(localStorage.getItem("myReviews")) || [];
-    localStorage.setItem("myReviews", JSON.stringify([newReview, ...existingReviews]));
-    alert("Review submitted! You can see it on the Reviews page.");
-    setIsModalOpen(false);
+
+    try {
+      const storedUser = localStorage.getItem("teknotesUser");
+      if (!storedUser) {
+        Swal.fire({ icon: 'warning', title: 'Login Required', text: 'Please login to submit a review.' });
+        navigate('/login');
+        return;
+      }
+      const user = JSON.parse(storedUser);
+
+      const payload = {
+        userId: user.id || user.userId,
+        resourceId: selectedResource.id, 
+        rating: reviewData.rating,
+        comment: reviewData.comment
+      };
+
+      await ApiService.createReview(payload);
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Review Submitted',
+        timer: 1500,
+        showConfirmButton: false
+      });
+
+      setIsModalOpen(false);
+      setSelectedResource(null);
+
+    } catch (err) {
+      console.error("Submission Error:", err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Submission Failed',
+        text: err.message || 'Could not save review.'
+      });
+    }
   };
 
   const handleDownload = (resource) => {
-    const existingDownloads = JSON.parse(localStorage.getItem("myDownloads")) || [];
-    const isAlreadyDownloaded = existingDownloads.some(item => item.id === resource.id);
-    
-    if (isAlreadyDownloaded) {
-      alert("You have already downloaded this resource!");
-      return;
-    }
-
-    const newDownload = {
-        ...resource,
-        downloadedAt: new Date().toLocaleDateString()
-    };
-    
-    const updatedDownloads = [newDownload, ...existingDownloads];
-    localStorage.setItem("myDownloads", JSON.stringify(updatedDownloads));
-    
-    alert(`"${resource.title}" has been added to your Downloads.`);
+    Swal.fire({ 
+        icon: 'success', 
+        title: 'Download Started', 
+        text: `Downloading ${resource.title}...`,
+        timer: 2000,
+        showConfirmButton: false
+    });
   };
 
-  // ✅ Handle Preview Navigation
   const handlePreview = (item) => {
     navigate(`/preview/${item.id}`, { state: { file: item } });
   };
@@ -178,7 +170,9 @@ export default function SearchResources() {
             </div>
           </div>
           <div className="header-right">
-            <button className="upload-btn"><Upload size={18} /> Upload</button>
+            <button className="upload-btn" onClick={() => navigate('/uploads')}>
+                <Upload size={18} /> Upload
+            </button>
             <button className="icon-btn"><Bell size={20} /></button>
             <button className="icon-btn"><User size={20} /></button>
           </div>
@@ -200,21 +194,36 @@ export default function SearchResources() {
                 <option value="All">All Subjects</option>
                 <option value="Computer Science">Computer Science</option>
                 <option value="Psychology">Psychology</option>
+                <option value="Mathematics">Mathematics</option>
+                <option value="Science">Science</option>
               </select>
             </div>
           </div>
 
-          <div className="search-results-grid">
-            {filteredResources.map((item) => (
-              <SearchCard 
-                key={item.id} 
-                data={item} 
-                onRate={handleRateClick} 
-                onDownload={handleDownload}
-                onPreview={handlePreview} // ✅ Pass the preview handler to the card
-              />
-            ))}
-          </div>
+          {loading ? (
+             <div style={{ textAlign: 'center', padding: '60px', color: '#666' }}>
+                <div className="spinner" style={{marginBottom: '10px'}}></div> 
+                <p>Loading materials from database...</p>
+             </div>
+          ) : (
+            <div className="search-results-grid">
+              {filteredResources.length > 0 ? (
+                filteredResources.map((item) => (
+                  <SearchCard 
+                    key={item.id} 
+                    data={item} 
+                    onRate={handleRateClick} 
+                    onDownload={handleDownload}
+                    onPreview={handlePreview} 
+                  />
+                ))
+              ) : (
+                <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: '#888' }}>
+                  <p>No resources found matching your search.</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <ReviewModal 

@@ -70,7 +70,6 @@ export default function Reviews() {
     loadReviews();
   }, [navigate]);
 
-  // Delete functionality with SweetAlert2
   const handleDelete = async (id) => {
     const result = await Swal.fire({
       title: 'Delete Review?',
@@ -105,7 +104,7 @@ export default function Reviews() {
     }
   };
 
-  // ✅ 4. Calculate Stats Dynamically based on 'reviews' state
+  
   const totalReviews = reviews.length;
   const totalLikes = reviews.reduce((sum, item) => sum + (item.likes || 0), 0);
   const avgRating = totalReviews > 0 
@@ -118,7 +117,6 @@ export default function Reviews() {
     { label: "Likes Received", count: totalLikes, icon: ThumbsUp, color: "green" },
   ];
 
-  // Helper to render stars
   const renderStars = (count) => {
     return [...Array(5)].map((_, i) => (
       <Star 
@@ -194,16 +192,20 @@ export default function Reviews() {
           <div className="reviews-list">
             {reviews.length > 0 ? (
               reviews.map((review) => (
-                <div key={review.id} className="review-card">
+               
+                <div key={review.reviewId || review.id} className="review-card">
                   
                   <div className="review-card-header">
                     <div className="header-content">
-                      <h4>{review.title}</h4>
+                      {/* FIX 1: Access the nested resource title */}
+                      <h4>{review.resource ? review.resource.title : "Resource Review"}</h4>
+                      
+                      {/* Optional: Check if user matches to show badge */}
                       {review.isMyReview && <span className="my-review-badge">My Reviews</span>}
                     </div>
                     <div className="card-actions">
                       <button className="action-btn edit"><Edit2 size={18} /></button>
-                      <button className="action-btn delete" onClick={() => handleDelete(review.id)}>
+                      <button className="action-btn delete" onClick={() => handleDelete(review.reviewId || review.id)}>
                         <Trash2 size={18} />
                       </button>
                     </div>
@@ -213,16 +215,17 @@ export default function Reviews() {
                     {renderStars(review.rating)}
                   </div>
 
-                  <p className="review-text">{review.content}</p>
+                  {/* FIX 2: Use 'comment' instead of 'content' */}
+                  <p className="review-text">{review.comment}</p>
 
                   <div className="review-footer">
                     <div className="engagement-item">
                       <ThumbsUp size={18} />
-                      <span>{review.likes}</span>
+                      <span>{review.likes || 0}</span>
                     </div>
                     <div className="engagement-item">
                       <MessageSquare size={18} />
-                      <span>{review.comments}</span>
+                      <span>0</span>
                     </div>
                   </div>
 
@@ -234,7 +237,6 @@ export default function Reviews() {
               </div>
             )}
           </div>
-
         </div>
       </main>
     </div>
