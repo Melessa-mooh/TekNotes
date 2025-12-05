@@ -2,9 +2,10 @@ package com.appdevg4.bcd.teknotes.service;
 
 import com.appdevg4.bcd.teknotes.dto.DashboardResponse;
 import com.appdevg4.bcd.teknotes.dto.ResourceSummaryDto;
-import com.appdevg4.bcd.teknotes.entity.Bookmark;
+import com.appdevg4.bcd.teknotes.entity.Download;
 import com.appdevg4.bcd.teknotes.entity.Resource;
 import com.appdevg4.bcd.teknotes.repository.BookmarkRepository;
+import com.appdevg4.bcd.teknotes.repository.DownloadRepository;
 import com.appdevg4.bcd.teknotes.repository.ResourceRepository;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -17,11 +18,14 @@ public class DashboardServiceImpl implements DashboardService {
 
     private final ResourceRepository resourceRepo;
     private final BookmarkRepository bookmarkRepo;
+    private final DownloadRepository downloadRepo;
 
     public DashboardServiceImpl(ResourceRepository resourceRepo,
-                                BookmarkRepository bookmarkRepo) {
+                                BookmarkRepository bookmarkRepo,
+                                DownloadRepository downloadRepo) {
         this.resourceRepo = resourceRepo;
         this.bookmarkRepo = bookmarkRepo;
+        this.downloadRepo = downloadRepo;
     }
 
     @Override
@@ -31,23 +35,23 @@ public class DashboardServiceImpl implements DashboardService {
         // top stats
         res.setUploadedNotes(resourceRepo.countUploadedByUser(userId));
         res.setBookmarked(bookmarkRepo.countByUserId(userId));
-        res.setTotalDownloads(0); // TODO: hook to real downloads later
+        res.setTotalDownloads(downloadRepo.countByUserId(userId));
 
-        // recent uploads
+        // recent uploads - show ALL resources from ALL users
         List<Resource> recentUploads =
-                resourceRepo.findRecentUploads(userId, PageRequest.of(0, 5));
+                resourceRepo.findAllRecentUploads(PageRequest.of(0, 10));
         res.setRecentUploads(
                 recentUploads.stream()
                         .map(ResourceSummaryDto::from)
                         .collect(Collectors.toList())
         );
 
-        // recent downloads – for now, just show recent bookmarks as "downloads"
-        List<Bookmark> recentBookmarks =
-                bookmarkRepo.findRecentBookmarks(userId, PageRequest.of(0, 5));
+        // recent downloads – use real downloads
+        List<Download> recentDownloads =
+                downloadRepo.findRecentDownloads(userId, PageRequest.of(0, 5));
         res.setRecentDownloads(
-                recentBookmarks.stream()
-                        .map(b -> ResourceSummaryDto.from(b.getResource()))
+                recentDownloads.stream()
+                        .map(d -> ResourceSummaryDto.from(d.getResource()))
                         .collect(Collectors.toList())
         );
 

@@ -31,6 +31,7 @@ export default function Uploads() {
     description: "",
     instructor: "",
     courseCode: "",
+    department: "",
     tags: "",
   });
 
@@ -122,6 +123,7 @@ export default function Uploads() {
       form.append("courseName", formData.course || "");
       form.append("courseCode", formData.courseCode || "");
       form.append("teacherName", formData.instructor || "");
+      form.append("department", formData.department || "");
       form.append("tags", formData.tags || "");
       form.append("userId", userId);
 
@@ -292,6 +294,16 @@ export default function Uploads() {
                     onChange={handleInputChange}
                   />
                 </div>
+              </div>
+              <div className="form-group full-width">
+                <label>Department:</label>
+                <input
+                  type="text"
+                  name="department"
+                  value={formData.department}
+                  onChange={handleInputChange}
+                  placeholder="e.g., Computer Science, Mathematics"
+                />
               </div>
               <div className="form-group full-width">
                 <label>Tags:</label>

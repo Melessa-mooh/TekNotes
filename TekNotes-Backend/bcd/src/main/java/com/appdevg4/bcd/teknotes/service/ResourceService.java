@@ -44,6 +44,10 @@ public class ResourceService {
         return repo.findAll();
     }
 
+    public List<Resource> findByUserId(Integer userId) {
+        return repo.findByUploaderUserId(userId);
+    }
+
     public Resource findById(Integer id) {
         return repo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Resource not found: " + id));
@@ -65,6 +69,43 @@ public class ResourceService {
         repo.deleteById(id);
     }
 
+    // Find or create a resource from a shared file
+    public Resource findOrCreateResourceFromSharedFile(String fileUrl, String fileName, Integer uploadedByUserId) {
+        // First, try to find existing resource with same fileUrl
+        java.util.Optional<Resource> existing = repo.findByFileUrl(fileUrl);
+        if (existing.isPresent()) {
+            return existing.get();
+        }
+
+        // If not found, create a new resource entry
+        User uploader = userRepo.findById(uploadedByUserId)
+                .orElseThrow(() -> new RuntimeException("User not found: " + uploadedByUserId));
+
+        // Find or create a default course for shared files (to avoid duplicates)
+        Course defaultCourse = courseRepo.findByCourseNameIgnoreCaseAndTeacherNameIgnoreCase(
+                "Shared from Study Group", "").orElse(null);
+        
+        if (defaultCourse == null) {
+            defaultCourse = new Course();
+            defaultCourse.setCourseName("Shared from Study Group");
+            defaultCourse.setCourseCode("GROUP");
+            defaultCourse.setTeacherName("");
+            defaultCourse.setDepartment("");
+            defaultCourse = courseRepo.save(defaultCourse);
+        }
+
+        Resource resource = new Resource();
+        resource.setUploader(uploader);
+        resource.setCourse(defaultCourse);
+        resource.setTitle(fileName != null ? fileName : "Shared File");
+        resource.setFileUrl(fileUrl);
+        resource.setTagName("Study Group Shared File");
+        resource.setTagDescription("File shared in a study group");
+        resource.setCreatedAt(java.time.LocalDateTime.now());
+
+        return repo.save(resource);
+    }
+
     // ---------- NEW: upload logic ----------
 
     public Resource uploadResource(MultipartFile file,
@@ -73,6 +114,7 @@ public class ResourceService {
             String courseName,
             String courseCode,
             String teacherName,
+            String department,
             String tags,
             Integer userId) throws IOException {
 
@@ -101,7 +143,14 @@ public class ResourceService {
             course.setCourseName(courseName != null ? courseName : "General");
             course.setCourseCode(courseCode != null ? courseCode : "");
             course.setTeacherName(teacherName != null ? teacherName : "");
+            course.setDepartment(department != null ? department : "");
             courseRepo.save(course);
+        } else {
+            // Update department if provided and course exists
+            if (department != null && !department.isBlank()) {
+                course.setDepartment(department);
+                courseRepo.save(course);
+            }
         }
 
         // save file to disk

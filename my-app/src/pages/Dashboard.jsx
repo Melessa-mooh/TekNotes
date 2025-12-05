@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 import Sidebar from "../components/Sidebar";
+import Header from "../components/Header";
 import ResourceCard from "../components/ResourceCard";
 import ApiService from "../services/api";
 import Swal from 'sweetalert2';
@@ -50,6 +51,7 @@ export default function Dashboard() {
 
   const [recentUploads, setRecentUploads] = useState([]);
   const [recentDownloads, setRecentDownloads] = useState([]);
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   const navigate = useNavigate();
 
@@ -108,6 +110,8 @@ export default function Dashboard() {
 
     if (!userId) return;
 
+    setCurrentUserId(userId);
+
     const init = async () => {
       try {
         // 1. Get latest user data from backend (MySQL)
@@ -139,6 +143,29 @@ export default function Dashboard() {
 
     init();
   }, []);
+
+  // Refresh dashboard when window regains focus or download completed
+  useEffect(() => {
+    const handleFocus = () => {
+      if (currentUserId) {
+        loadDashboardData(currentUserId);
+      }
+    };
+
+    const handleDownloadCompleted = () => {
+      if (currentUserId) {
+        loadDashboardData(currentUserId);
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('downloadCompleted', handleDownloadCompleted);
+    
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('downloadCompleted', handleDownloadCompleted);
+    };
+  }, [currentUserId]);
 
   const handleSearch = (e) => {
     if (e.key === "Enter" && searchTerm.trim()) {
@@ -217,7 +244,7 @@ export default function Dashboard() {
           {/* Recent Uploads */}
           <section className="content-section">
             <div className="section-header">
-              <h3>Recent Uploads</h3>
+              <h3>All Uploaded Notes</h3>
               <Link to="/uploads" className="view-all">
                 View all
               </Link>
@@ -227,16 +254,16 @@ export default function Dashboard() {
                 <p className="empty-text">No recent uploads yet.</p>
               ) : (
                 recentUploads.map((item) => (
-                  <ResourceCard key={item.id} data={item} />
+                  <ResourceCard key={item.id} data={item} currentUserId={currentUserId} />
                 ))
               )}
             </div>
           </section>
 
-          {/* Recent Downloads */}
+          {/* Recent Downloads - Only Current User */}
           <section className="content-section downloads-section">
             <div className="section-header">
-              <h3>Recent Downloads</h3>
+              <h3>My Recent Downloads</h3>
               <Link to="/downloads" className="view-all">
                 View all
               </Link>
@@ -246,7 +273,7 @@ export default function Dashboard() {
                 <p className="empty-text">No recent downloads yet.</p>
               ) : (
                 recentDownloads.map((item) => (
-                  <ResourceCard key={item.id} data={item} />
+                  <ResourceCard key={item.id} data={item} currentUserId={currentUserId} />
                 ))
               )}
             </div>

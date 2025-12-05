@@ -35,32 +35,51 @@ export default function SearchResources() {
   // Data State
   const [allResources, setAllResources] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState(null);
 
   // ✅ FETCH DATA & FIX UPLOADER NAME
   useEffect(() => {
     const fetchResources = async () => {
       try {
+        // Get current user ID
+        const storedUser = localStorage.getItem("teknotesUser");
+        if (storedUser) {
+          const user = JSON.parse(storedUser);
+          setCurrentUserId(user.id || user.userId);
+        }
+
         setLoading(true);
         const data = await ApiService.getAllResources();
 
         const resourcesArray = Array.isArray(data) ? data : [];
         
         // Map Backend Data -> Frontend UI Structure
-        const mappedData = resourcesArray.map((item) => ({
-          id: item.id,
-          title: item.title,
-          description: item.description,
-          subject: item.courseName || item.subject || "General", 
-          author: item.teacherName || item.author || "Unknown Instructor", 
-          fileType: item.fileType || "PDF", 
-          date: item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "Recently", 
-          rating: item.averageRating || 0, 
-          reviews: item.reviewCount || 0, 
-          downloads: item.downloads || 0,
+        const mappedData = resourcesArray.map((item) => {
+          const userId = storedUser ? JSON.parse(storedUser).id || JSON.parse(storedUser).userId : null;
+          const isMyUpload = userId && (item.uploaderUserId === userId || item.uploaderId === userId);
+          const uploaderDisplay = isMyUpload ? "You" : (item.uploaderName || item.uploadedBy || item.user?.username || "Community");
           
-          // ✅ FIX: Check for the direct string first, then nested object
-          uploadedBy: item.uploadedBy || item.user?.username || "Community"
-        }));
+          return {
+            id: item.id,
+            title: item.title,
+            description: item.description || item.tagDescription || "",
+            subject: item.courseName || item.subject || "General", 
+            author: item.teacherName || item.author || "Unknown Instructor", 
+            fileType: item.fileType || "PDF", 
+            date: item.createdAt ? new Date(item.createdAt).toLocaleDateString() : "Recently", 
+            rating: item.averageRating || 0, 
+            reviews: item.reviewCount || 0, 
+            downloads: item.downloads || item.downloadCount || 0,
+            uploadedBy: uploaderDisplay,
+            uploaderUserId: item.uploaderUserId || item.uploaderId,
+            // Add searchable fields
+            courseCode: item.courseCode || "",
+            department: item.department || "",
+            tags: item.tagName || item.tags || "",
+            courseName: item.courseName || item.subject || "",
+            teacherName: item.teacherName || item.author || ""
+          };
+        });
 
         setAllResources(mappedData);
       } catch (error) {
@@ -78,15 +97,34 @@ export default function SearchResources() {
     fetchResources();
   }, []);
 
-  // Filter Logic
+  // Filter Logic - Search across multiple fields
   const filteredResources = allResources.filter((item) => {
-    const query = searchQuery.toLowerCase();
+    const query = searchQuery.toLowerCase().trim();
     
-    // Safety check
-    const title = item.title ? item.title.toLowerCase() : "";
-    const subject = item.subject ? item.subject.toLowerCase() : "";
+    // If search query is empty, only filter by category
+    if (!query) {
+      return activeCategory === "All" || item.subject === activeCategory;
+    }
     
-    const matchesSearch = title.includes(query) || subject.includes(query);
+    // Safety checks and normalize to lowercase
+    const title = (item.title || "").toLowerCase();
+    const courseName = (item.courseName || item.subject || "").toLowerCase();
+    const instructor = (item.teacherName || item.author || "").toLowerCase();
+    const department = (item.department || "").toLowerCase();
+    const tags = (item.tags || item.tagName || "").toLowerCase();
+    const courseCode = (item.courseCode || "").toLowerCase();
+    const description = (item.description || "").toLowerCase();
+    
+    // Search across all fields
+    const matchesSearch = 
+      title.includes(query) ||
+      courseName.includes(query) ||
+      instructor.includes(query) ||
+      department.includes(query) ||
+      tags.includes(query) ||
+      courseCode.includes(query) ||
+      description.includes(query);
+    
     const matchesCategory = activeCategory === "All" || item.subject === activeCategory;
     
     return matchesSearch && matchesCategory;
@@ -140,18 +178,98 @@ export default function SearchResources() {
     }
   };
 
-  const handleDownload = (resource) => {
-    Swal.fire({ 
+  const handleDownload = async (resource) => {
+    try {
+      const storedUser = localStorage.getItem("teknotesUser");
+      if (!storedUser) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Please Login',
+          text: 'You need to login to download resources',
+        });
+        navigate('/login');
+        return;
+      }
+      
+      const user = JSON.parse(storedUser);
+      const userId = user.id || user.userId;
+      const resourceId = resource.id;
+
+      if (!userId || !resourceId) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Error',
+          text: 'Missing user or resource information'
+        });
+        return;
+      }
+
+      // Track the download in the backend
+      await ApiService.createDownload(userId, resourceId);
+
+      // Try to trigger actual file download if fileUrl exists
+      // Note: You may need to fetch the full resource to get fileUrl
+      try {
+        const fullResource = await ApiService.getResourceById(resourceId);
+        if (fullResource.fileUrl) {
+          const fileUrl = fullResource.fileUrl.startsWith('http') 
+            ? fullResource.fileUrl 
+            : `http://localhost:8080${fullResource.fileUrl}`;
+          const link = document.createElement('a');
+          link.href = fileUrl;
+          link.download = resource.title || 'download';
+          link.target = '_blank';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+      } catch (fileErr) {
+        console.log("File download not available, but download tracked");
+      }
+
+      Swal.fire({ 
         icon: 'success', 
         title: 'Download Started', 
-        text: `Downloading ${resource.title}...`,
+        text: `${resource.title} has been added to your downloads`,
         timer: 2000,
         showConfirmButton: false
-    });
+      });
+
+      // Trigger a custom event to notify dashboard to refresh
+      window.dispatchEvent(new CustomEvent('downloadCompleted'));
+    } catch (err) {
+      console.error("Error downloading:", err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to download resource: ' + err.message
+      });
+    }
   };
 
   const handlePreview = (item) => {
-    navigate(`/preview/${item.id}`, { state: { file: item } });
+    const description = item.description || item.tagDescription || 'No description available.';
+    Swal.fire({
+      title: item.title,
+      html: `
+        <div style="text-align: left; padding: 10px;">
+          <p><strong>Subject:</strong> ${item.subject || item.courseName || 'N/A'}</p>
+          <p><strong>Professor:</strong> ${item.professor || item.teacherName || 'N/A'}</p>
+          <p><strong>File Type:</strong> ${item.fileType || 'N/A'}</p>
+          <p><strong>Description:</strong></p>
+          <p style="margin-top: 10px; padding: 10px; background: #f8fafc; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word;">
+            ${description}
+          </p>
+          <p style="margin-top: 10px;"><strong>Rating:</strong> ${item.rating || 0} (${item.reviews || item.reviewCount || 0} reviews)</p>
+          <p><strong>Downloads:</strong> ${item.downloads || item.downloadCount || 0}</p>
+          <p style="margin-top: 10px; font-size: 12px; color: #64748b;"><strong>Uploaded by:</strong> ${item.uploadedBy || item.uploaderName || 'Unknown'}</p>
+        </div>
+      `,
+      width: '600px',
+      showCloseButton: true,
+      showConfirmButton: true,
+      confirmButtonText: 'Close'
+    });
   };
 
   return (
@@ -184,7 +302,7 @@ export default function SearchResources() {
               <Search size={20} className="search-icon-gray" />
               <input 
                 type="text" 
-                placeholder="Search resources..." 
+                placeholder="Search by Course, Instructor, Department, Tags, or Course Code..." 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
@@ -214,7 +332,8 @@ export default function SearchResources() {
                     data={item} 
                     onRate={handleRateClick} 
                     onDownload={handleDownload}
-                    onPreview={handlePreview} 
+                    onPreview={handlePreview}
+                    currentUserId={currentUserId}
                   />
                 ))
               ) : (

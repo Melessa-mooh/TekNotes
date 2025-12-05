@@ -20,4 +20,16 @@ public interface ResourceRepository extends JpaRepository<Resource, Integer> {
     // DASHBOARD: get the most recent uploads of this user
     @Query("select r from Resource r where r.uploader.userId = :userId order by r.createdAt desc")
     List<Resource> findRecentUploads(@Param("userId") Integer userId, Pageable pageable);
+
+    // DASHBOARD: get ALL recent uploads from ALL users
+    @Query("select r from Resource r order by r.createdAt desc")
+    List<Resource> findAllRecentUploads(Pageable pageable);
+
+    // MY MATERIALS: get ALL resources uploaded by a specific user
+    @Query("select r from Resource r where r.uploader.userId = :userId order by r.createdAt desc")
+    List<Resource> findByUploaderUserId(@Param("userId") Integer userId);
+
+    // Find resource by file URL
+    @Query("select r from Resource r where r.fileUrl = :fileUrl")
+    java.util.Optional<Resource> findByFileUrl(@Param("fileUrl") String fileUrl);
 }

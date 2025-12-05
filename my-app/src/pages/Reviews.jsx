@@ -17,6 +17,7 @@ import Swal from 'sweetalert2';
 
 import Sidebar from "../components/Sidebar";
 import ApiService from "../services/api";
+import CommentsModal from "../components/CommentsModal";
 import "../styles/dashboard.css"; 
 import "../styles/reviews.css";   
 
@@ -24,6 +25,9 @@ export default function Reviews() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [selectedReviewId, setSelectedReviewId] = useState(null);
+  const [showCommentsModal, setShowCommentsModal] = useState(false);
   const navigate = useNavigate();
 
   // Load reviews from backend
@@ -43,15 +47,16 @@ export default function Reviews() {
 
         const user = JSON.parse(storedUser);
         const userId = user.id || user.userId;
+        setCurrentUserId(userId);
 
-        // Fetch user's reviews from backend
-        const userReviews = await ApiService.getUserReviews(userId);
-        setReviews(userReviews);
+        // Fetch ALL reviews from backend (not just current user's) with like/comment counts
+        const allReviews = await ApiService.getAllReviews(userId);
+        setReviews(allReviews);
         
         Swal.fire({
           icon: 'success',
           title: 'Reviews Loaded',
-          text: `You have written ${userReviews.length} reviews`,
+          text: `Loaded ${allReviews.length} reviews`,
           timer: 2000,
           showConfirmButton: false
         });
@@ -69,6 +74,36 @@ export default function Reviews() {
 
     loadReviews();
   }, [navigate]);
+
+  const handleLike = async (reviewId) => {
+    if (!currentUserId) {
+      Swal.fire({
+        icon: 'warning',
+        title: 'Please Login',
+        text: 'You need to login to like reviews',
+      });
+      return;
+    }
+
+    try {
+      const result = await ApiService.toggleReviewLike(reviewId, currentUserId);
+      // Reload reviews to get updated like counts
+      const allReviews = await ApiService.getAllReviews(currentUserId);
+      setReviews(allReviews);
+    } catch (err) {
+      console.error("Error toggling like:", err);
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to like review: ' + (err.message || 'Unknown error')
+      });
+    }
+  };
+
+  const handleComments = (reviewId) => {
+    setSelectedReviewId(reviewId);
+    setShowCommentsModal(true);
+  };
 
   const handleDelete = async (id) => {
     const result = await Swal.fire({
@@ -142,7 +177,9 @@ export default function Reviews() {
             <h1 className="page-title">Reviews</h1>
           </div>
           <div className="header-right">
-            <button className="upload-btn"><Upload size={18} /> Upload</button>
+            <button className="upload-btn" onClick={() => navigate('/uploads')}>
+              <Upload size={18} /> Upload
+            </button>
             <button className="icon-btn"><Bell size={20} /></button>
             <button className="icon-btn"><User size={20} /></button>
           </div>
@@ -198,10 +235,12 @@ export default function Reviews() {
                   <div className="review-card-header">
                     <div className="header-content">
                       {/* FIX 1: Access the nested resource title */}
-                      <h4>{review.resource ? review.resource.title : "Resource Review"}</h4>
+                      <h4>{review.resourceTitle || (review.resource ? review.resource.title : "Resource Review")}</h4>
                       
-                      {/* Optional: Check if user matches to show badge */}
-                      {review.isMyReview && <span className="my-review-badge">My Reviews</span>}
+                      {/* Show reviewer name - "You" if it's current user */}
+                      <p style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
+                        Reviewed by {currentUserId && review.userId === currentUserId ? "You" : (review.userName || "Unknown")}
+                      </p>
                     </div>
                     <div className="card-actions">
                       <button className="action-btn edit"><Edit2 size={18} /></button>
@@ -219,14 +258,39 @@ export default function Reviews() {
                   <p className="review-text">{review.comment}</p>
 
                   <div className="review-footer">
-                    <div className="engagement-item">
-                      <ThumbsUp size={18} />
-                      <span>{review.likes || 0}</span>
-                    </div>
-                    <div className="engagement-item">
+                    <button 
+                      className="engagement-item" 
+                      onClick={() => handleLike(review.reviewId || review.id)}
+                      style={{ 
+                        background: 'transparent', 
+                        border: 'none', 
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        color: review.isLiked ? '#5C0000' : 'inherit'
+                      }}
+                      title="Like this review"
+                    >
+                      <ThumbsUp size={18} fill={review.isLiked ? '#5C0000' : 'none'} />
+                      <span>{review.likeCount || review.likes || 0}</span>
+                    </button>
+                    <button 
+                      className="engagement-item"
+                      onClick={() => handleComments(review.reviewId || review.id)}
+                      style={{ 
+                        background: 'transparent', 
+                        border: 'none', 
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                      title="View comments"
+                    >
                       <MessageSquare size={18} />
-                      <span>0</span>
-                    </div>
+                      <span>{review.commentCount || 0}</span>
+                    </button>
                   </div>
 
                 </div>
@@ -238,6 +302,20 @@ export default function Reviews() {
             )}
           </div>
         </div>
+
+        <CommentsModal
+          isOpen={showCommentsModal}
+          onClose={() => {
+            setShowCommentsModal(false);
+            setSelectedReviewId(null);
+            // Reload reviews to get updated comment counts
+            if (currentUserId) {
+              ApiService.getAllReviews(currentUserId).then(setReviews).catch(console.error);
+            }
+          }}
+          reviewId={selectedReviewId}
+          currentUserId={currentUserId}
+        />
       </main>
     </div>
   );

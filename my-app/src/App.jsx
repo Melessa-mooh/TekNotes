@@ -13,6 +13,8 @@ import Materials from "./pages/Materials"; // ✅ Import Materials
 import SearchResources from "./pages/SearchResources"; // Import
 import FilePreview from "./pages/FilePreview"; // Import
 import ProfileSettings from "./pages/profileSettings";
+import StudyGroups from "./pages/StudyGroups";
+import GroupChat from "./pages/GroupChat";
 
 
 
@@ -38,6 +40,8 @@ export default function App() {
          <Route path="/preview/:id" element={<FilePreview />} />
          <Route path="/settings" element={<Settings />} />
          <Route path="/settings/profile" element={<ProfileSettings />} />
+         <Route path="/groups" element={<StudyGroups />} />
+         <Route path="/groups/:groupId/chat" element={<GroupChat />} />
         
 
       </Routes>

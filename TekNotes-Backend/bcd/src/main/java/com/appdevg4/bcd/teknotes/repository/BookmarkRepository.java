@@ -16,4 +16,12 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, Integer> {
     // recent bookmarks of a user (for 'Recent Downloads' list)
     @Query("select b from Bookmark b where b.user.userId = :userId order by b.saveDate desc")
     List<Bookmark> findRecentBookmarks(@Param("userId") Integer userId, Pageable pageable);
+
+    // get all bookmarks for a user
+    @Query("select b from Bookmark b where b.user.userId = :userId order by b.saveDate desc")
+    List<Bookmark> findByUserId(@Param("userId") Integer userId);
+
+    // check if user has bookmarked a resource
+    @Query("select b from Bookmark b where b.user.userId = :userId and b.resource.resourceId = :resourceId")
+    List<Bookmark> findByUserIdAndResourceId(@Param("userId") Integer userId, @Param("resourceId") Integer resourceId);
 }

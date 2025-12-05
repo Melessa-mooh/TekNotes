@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/resources")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 public class ResourceController {
 
     private final ResourceService resourceService;
@@ -30,6 +30,7 @@ public class ResourceController {
             @RequestParam(value = "courseName", required = false) String courseName,
             @RequestParam(value = "courseCode", required = false) String courseCode,
             @RequestParam(value = "teacherName", required = false) String teacherName,
+            @RequestParam(value = "department", required = false) String department,
             @RequestParam(value = "tags", required = false) String tags,
             @RequestParam("userId") Integer userId) {
         try {
@@ -40,6 +41,7 @@ public class ResourceController {
                     courseName,
                     courseCode,
                     teacherName,
+                    department,
                     tags,
                     userId);
 
@@ -72,7 +74,7 @@ public class ResourceController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<ResourceDto>> getUserResources(@PathVariable Integer userId) {
         try {
-            List<Resource> resources = resourceService.findAll();
+            List<Resource> resources = resourceService.findByUserId(userId);
             List<ResourceDto> dtos = resources.stream()
                     .map(ResourceDto::from)
                     .collect(Collectors.toList());

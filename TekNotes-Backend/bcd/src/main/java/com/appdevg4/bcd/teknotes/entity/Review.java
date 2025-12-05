@@ -33,9 +33,13 @@ public class Review {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    
+    @Column(length = 20)
+    private String status; // "ACTIVE" or "DELETED"
+
+
     public Review() {
         this.createdAt = LocalDateTime.now();
+        this.status = "ACTIVE";
     }
     
     public Integer getReviewId() { return reviewId; }
@@ -50,4 +54,6 @@ public class Review {
     public void setRating(Integer rating) { this.rating = rating; }
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 }

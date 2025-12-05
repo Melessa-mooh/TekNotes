@@ -7,7 +7,8 @@ import {
   Bookmark,
   LogOut,
   Settings,
-  Home
+  Home,
+  Users
 } from "lucide-react";
 import "../styles/dashboard.css";
 
@@ -59,6 +60,11 @@ export default function Sidebar({ isOpen }) {
         <Link to="/bookmarks" className={isActive("/bookmarks")}>
           <Bookmark size={18} />
           Bookmarks
+        </Link>
+        
+        <Link to="/groups" className={isActive("/groups")}>
+          <Users size={18} />
+          Study Groups
         </Link>
       </nav>
 

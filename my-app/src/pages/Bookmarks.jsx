@@ -17,6 +17,7 @@ export default function Bookmarks() {
   const [selectedSubject, setSelectedSubject] = useState("All");
   const [bookmarks, setBookmarks] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState(null);
   const navigate = useNavigate();
 
   // Load bookmarks from backend
@@ -36,10 +37,32 @@ export default function Bookmarks() {
 
         const user = JSON.parse(storedUser);
         const userId = user.id || user.userId;
+        setCurrentUserId(userId);
 
         // Fetch user's bookmarks from backend
         const userBookmarks = await ApiService.getUserBookmarks(userId);
-        setBookmarks(userBookmarks);
+        
+        // Map bookmark data to expected format
+        const mappedBookmarks = userBookmarks.map(b => {
+          const resource = b.resource || {};
+          return {
+            id: b.id || b.bookmarkId,
+            title: resource.title || 'Untitled',
+            subject: resource.subject || resource.courseName || 'General',
+            professor: resource.professor || resource.teacherName || 'Unknown',
+            fileType: resource.fileType || 'FILE',
+            rating: resource.rating || 0,
+            reviews: resource.reviews || resource.reviewCount || 0,
+            downloads: resource.downloads || resource.downloadCount || 0,
+            date: b.saveDate ? new Date(b.saveDate).toLocaleDateString() : 'Recently',
+            resourceId: resource.id || resource.resourceId,
+            uploaderUserId: resource.uploaderUserId,
+            uploaderName: resource.uploaderName,
+            uploadedBy: resource.uploaderName || 'Unknown'
+          };
+        });
+        
+        setBookmarks(mappedBookmarks);
         
         Swal.fire({
           icon: 'success',
@@ -192,10 +215,16 @@ export default function Bookmarks() {
                   <div className="card-content" style={{ flex: 1 }}>
                     <h3>{item.title}</h3>
                     <p>{item.subject} • {item.professor}</p>
+                    <p style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
+                      Uploaded by {item.uploaderName || item.uploadedBy || 'Unknown'}
+                      {currentUserId && item.uploaderUserId === currentUserId && (
+                        <span style={{ marginLeft: '8px', color: '#5C0000', fontWeight: 'bold' }}>• Your Resource</span>
+                      )}
+                    </p>
                     
                     <div className="card-meta">
                       <span className="file-type">{item.fileType}</span>
-                      <span className="rating">⭐ {item.rating}</span>
+                      <span className="rating">⭐ {item.rating || 0} ({item.reviews || 0} reviews)</span>
                       <span style={{ marginLeft: "auto" }}>{item.date}</span>
                     </div>
                   </div>
