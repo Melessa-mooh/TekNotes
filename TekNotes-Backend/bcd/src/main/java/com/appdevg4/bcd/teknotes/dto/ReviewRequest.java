@@ -9,3 +9,4 @@ public class ReviewRequest {
     private Integer rating;
     private String comment;
 }
+//dto

@@ -11,3 +11,4 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
   
     List<Review> findByResource_ResourceId(Integer resourceId);
 }
+//review

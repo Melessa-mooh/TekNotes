@@ -12,13 +12,13 @@ public class Review {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer reviewId;
 
-    // FIX HERE: Tell Jackson to ignore "bookmarks", "reviews", "password" inside the User object
+    
     @ManyToOne(optional = false)
     @JoinColumn(name = "user_id")
     @JsonIgnoreProperties({"bookmarks", "reviews", "password", "hibernateLazyInitializer", "handler"}) 
     private User user;
 
-    // FIX HERE: Tell Jackson to ignore lists inside Resource to prevent loops
+   
     @ManyToOne(optional = false)
     @JoinColumn(name = "resource_id")
     @JsonIgnoreProperties({"reviews", "bookmarks", "hibernateLazyInitializer", "handler"}) 

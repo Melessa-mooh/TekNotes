@@ -18,7 +18,7 @@ public class ReviewController {
         this.service = service;
     }
 
-    // UPDATED: Accepts DTO
+    
     @PostMapping
     public Review create(@RequestBody ReviewRequest request) {
         return service.create(request);

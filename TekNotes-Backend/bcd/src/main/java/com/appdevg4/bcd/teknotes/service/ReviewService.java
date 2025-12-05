@@ -29,7 +29,7 @@ public class ReviewService {
     }
 
     public Review create(ReviewRequest request) {
-        // 1. Fetch User from DB using ID
+       
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new RuntimeException("User not found with ID: " + request.getUserId()));
 
@@ -39,7 +39,7 @@ public class ReviewService {
         Resource resource = resourceRepository.findById(resourceId)
                 .orElseThrow(() -> new RuntimeException("Resource not found with ID: " + request.getResourceId()));
 
-        // 3. Create the Review Entity
+      
         Review review = new Review();
         review.setUser(user);
         review.setResource(resource);
@@ -47,7 +47,7 @@ public class ReviewService {
         review.setComment(request.getComment());
         review.setCreatedAt(LocalDateTime.now());
 
-        // 4. Save to DB
+     
         return reviewRepository.save(review);
     }
 
