@@ -25,8 +25,16 @@ public class User {
     @Column(nullable = false, length = 20)
     private String role;
 
+    @Column(length = 50)
+    private String status; // ✅ 1. ADD THIS FIELD
+
     @Column(columnDefinition = "TEXT")
     private String studyPreferences;
+
+    // --- ADD THIS FIELD ---
+    @Lob // Large Object
+    @Column(columnDefinition = "LONGTEXT") // Allows massive strings (Base64 images)
+    private String profilePic;
 
     public User() {
     }
@@ -70,7 +78,25 @@ public class User {
     public String getStudyPreferences() {
         return studyPreferences;
     }
+
+    // --- ADD THESE METHODS ---
+    public void setProfilePic(String profilePic) {
+        this.profilePic = profilePic;
+    }
+    public String getProfilePic() {
+        return profilePic;
+    }
+
+    // ✅ 2. ADD THESE GETTERS AND SETTERS
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
     public void setStudyPreferences(String studyPreferences) {
         this.studyPreferences = studyPreferences;
     }
+    
 }

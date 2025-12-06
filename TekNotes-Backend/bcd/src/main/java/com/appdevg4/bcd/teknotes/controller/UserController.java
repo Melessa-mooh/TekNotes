@@ -43,6 +43,25 @@ public class UserController {
         if (user.getPassword() != null && !user.getPassword().isBlank()) {
             existing.setPassword(user.getPassword());
         }
+
+        // --- ADD THIS BLOCK ---
+        if (user.getProfilePic() != null) {
+            existing.setProfilePic(user.getProfilePic());
+        }
+
+        // Update Password Logic
+        if (user.getPassword() != null && !user.getPassword().isBlank()) {
+            existing.setPassword(user.getPassword());
+            
+            // ✅ 3. UPDATE THE STATUS HERE
+            existing.setStatus("Password Updated"); 
+        }
+
+        // Optional: If you want to track regular profile updates too:
+        if (user.getFirstName() != null || user.getLastName() != null) {
+             // You can set it to "Profile Updated" if you want detailed tracking
+             // existing.setStatus("Profile Updated"); 
+        }
         return service.update(id, existing);
     }
 
