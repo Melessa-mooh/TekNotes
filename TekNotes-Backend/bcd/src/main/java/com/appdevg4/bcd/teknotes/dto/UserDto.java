@@ -12,6 +12,8 @@ public class UserDto {
     private String email;
     private String role;
     private String studyPreferences;
+    // --- ADD THIS FIELD ---
+    private String profilePic;
 
     public static UserDto from(User u) {
         UserDto dto = new UserDto();
@@ -21,6 +23,9 @@ public class UserDto {
         dto.email = u.getEmail();
         dto.role = u.getRole();
         dto.studyPreferences = u.getStudyPreferences();
+
+        // --- ADD THIS LINE ---
+        dto.profilePic = u.getProfilePic();
         return dto;
     }
 }

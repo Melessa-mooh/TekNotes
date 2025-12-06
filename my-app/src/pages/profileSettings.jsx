@@ -43,14 +43,26 @@ export default function ProfileSettings() {
     const loadUserData = async () => {
       try {
         const userData = await ApiService.getUserProfile(userId);
+        
+        // Update text fields
         setFirstName(userData.firstName || "");
         setLastName(userData.lastName || "");
         setEmail(userData.email || "");
         setFullName(`${userData.firstName || ""} ${userData.lastName || ""}`);
         setStudyPreferences(userData.studyPreferences || "");
+
+        // 👇 THIS IS THE FIX FOR THE REFRESH ISSUE 👇
+        // Check if the database sent back a profile picture
+        if (userData.profilePic) {
+            setProfilePic(userData.profilePic);
+            // Sync it to local storage so other pages (like Materials) can see it too
+            localStorage.setItem("userProfilePic", userData.profilePic);
+        }
+
       } catch (error) {
         console.error("Error loading user data:", error);
-        // Fallback to localStorage
+        
+        // Fallback to localStorage if API fails
         const savedFullName = localStorage.getItem("userFullName");
         const savedEmail = localStorage.getItem("userEmail");
         const savedFirstName = localStorage.getItem("userFirstName");
@@ -95,7 +107,6 @@ export default function ProfileSettings() {
     }
 
     try {
-      // Update user profile including study preferences
       const response = await fetch(`http://localhost:8080/api/users/${currentUserId}`, {
         method: 'PUT',
         headers: {
@@ -106,7 +117,9 @@ export default function ProfileSettings() {
           firstName: firstName,
           lastName: lastName,
           email: email,
-          studyPreferences: studyPreferences
+          studyPreferences: studyPreferences,
+          // Sending the image to the backend
+          profilePic: profilePic 
         }),
       });
 
@@ -118,12 +131,16 @@ export default function ProfileSettings() {
       setFullName(updatedFullName);
       setIsEditing(false);
 
-      // Also save to localStorage as backup
+      // Save to localStorage as backup/sync
       localStorage.setItem("userFullName", updatedFullName);
       localStorage.setItem("userEmail", email);
       localStorage.setItem("userFirstName", firstName);
       localStorage.setItem("userLastName", lastName);
       localStorage.setItem("studyPreferences", studyPreferences);
+      
+      if (profilePic) {
+        localStorage.setItem("userProfilePic", profilePic);
+      }
 
       Swal.fire({
         icon: "success",
