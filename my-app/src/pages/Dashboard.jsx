@@ -29,21 +29,18 @@ export default function Dashboard() {
     {
       label: "Uploaded Notes",
       count: 0,
-      change: "show how many uploaded notes this week",
       icon: FileText,
       color: "red",
     },
     {
       label: "Bookmarked",
       count: 0,
-      change: "show how many bookmarked notes this week",
       icon: Bookmark,
       color: "red",
     },
     {
       label: "Total Downloads",
       count: 0,
-      change: "shows the total Downloaded notes this week",
       icon: TrendingUp,
       color: "red",
     },
@@ -64,21 +61,18 @@ export default function Dashboard() {
         {
           label: "Uploaded Notes",
           count: data.uploadedNotes ?? 0,
-          change: "show how many uploaded notes this week",
           icon: FileText,
           color: "red",
         },
         {
           label: "Bookmarked",
           count: data.bookmarked ?? 0,
-          change: "show how many bookmarked notes this week",
           icon: Bookmark,
           color: "red",
         },
         {
           label: "Total Downloads",
           count: data.totalDownloads ?? 0,
-          change: "shows the total Downloaded notes this week",
           icon: TrendingUp,
           color: "red",
         },
