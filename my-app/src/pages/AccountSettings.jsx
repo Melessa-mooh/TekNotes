@@ -13,8 +13,8 @@ import {
   Bookmark,
   ArrowLeft,
   Settings,
-  Eye,      // ✅ Import Eye
-  EyeOff    // ✅ Import EyeOff
+  Eye,      
+  EyeOff  
 } from "lucide-react";
 import ApiService from "../services/api";
 import Swal from "sweetalert2";
@@ -27,7 +27,6 @@ export default function AccountSettings() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [currentUserId, setCurrentUserId] = useState(null);
 
-  // ✅ New State for Password Visibility
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -126,7 +125,6 @@ export default function AccountSettings() {
         </div>
       </aside>
 
-      {/* Main Content */}
       <main className="main-content">
         <header className="header">
           <div className="header-left">
@@ -170,12 +168,11 @@ export default function AccountSettings() {
 
                 <h4 className="section-title">Change password</h4>
 
-                {/* CURRENT PASSWORD */}
                 <div className="account-form-group">
                     <label className="account-label">Current password</label>
                     <div className="account-password-wrapper">
                         <input 
-                            type={showCurrentPassword ? "text" : "password"} // Toggle type
+                            type={showCurrentPassword ? "text" : "password"} 
                             value={currentPassword}
                             onChange={(e) => setCurrentPassword(e.target.value)}
                             className="account-input"
