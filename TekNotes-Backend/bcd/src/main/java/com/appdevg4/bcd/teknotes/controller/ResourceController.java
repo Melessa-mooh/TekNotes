@@ -95,4 +95,22 @@ public class ResourceController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
+
+
+    // 🚀 NEW METHOD TO HANDLE DELETE REQUESTS
+    @DeleteMapping("/{id}") // Maps DELETE requests to /api/resources/{id}
+    public ResponseEntity<Void> deleteResource(@PathVariable Integer id) {
+        try {
+            // Call the service layer to perform the deletion logic
+            resourceService.deleteById(id); 
+            
+            // Return 204 No Content for successful deletion
+            return ResponseEntity.noContent().build(); 
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Return 404 if the resource was not found, or 500 for other errors
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
+    }
 }

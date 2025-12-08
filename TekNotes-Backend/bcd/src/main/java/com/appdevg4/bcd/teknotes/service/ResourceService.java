@@ -65,9 +65,12 @@ public class ResourceService {
         return repo.save(r);
     }
 
-    public void delete(Integer id) {
-        repo.deleteById(id);
-    }
+    // ResourceService.java (FIXED)
+public void deleteById(Integer id) {
+    repo.deleteById(id);
+}
+
+    
 
     // Find or create a resource from a shared file
     public Resource findOrCreateResourceFromSharedFile(String fileUrl, String fileName, Integer uploadedByUserId) {

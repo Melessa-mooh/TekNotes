@@ -124,29 +124,35 @@ export default function Materials() {
   };
 
   // Handle Delete Action
-  const handleDelete = async (e, itemId) => {
-    e.stopPropagation(); 
-    
-    const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert this!",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Yes, delete it!'
-    });
+  // Handle Delete Action
+const handleDelete = async (e, itemId) => {
+e.stopPropagation(); 
 
-    if (result.isConfirmed) {
-      try {
-        // await ApiService.deleteResource(itemId); // Uncomment when API is ready
-        setMaterials(prev => prev.filter(item => item.id !== itemId)); 
-        Swal.fire('Deleted!', 'Your file has been deleted.', 'success');
-      } catch (err) {
-        Swal.fire('Error', 'Failed to delete file.', 'error');
-      }
-    }
-  };
+const result = await Swal.fire({
+ title: 'Are you sure?',
+ text: "You won't be able to revert this!",
+ icon: 'warning',
+showCancelButton: true,
+ confirmButtonColor: '#d33',
+ cancelButtonColor: '#3085d6',
+ confirmButtonText: 'Yes, delete it!'
+ });
+
+ if (result.isConfirmed) {
+ try {
+ // ✅ FIX: UNCOMMENT THIS LINE TO SEND THE DELETE REQUEST TO THE SERVER
+await ApiService.deleteResource(itemId); 
+
+// This line is correct, it updates the local UI immediately
+ setMaterials(prev => prev.filter(item => item.id !== itemId)); 
+Swal.fire('Deleted!', 'Your file has been deleted.', 'success');
+} catch (err) {
+            // It's good practice to console log the error for debugging
+console.error("Error deleting material from server:", err); 
+ Swal.fire('Error', 'Failed to delete file.', 'error');
+}
+ }
+};
 
   // Handle Bookmark
   const handleBookmark = async (item) => {
