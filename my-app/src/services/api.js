@@ -131,6 +131,7 @@ class ApiService {
     
     return await response.json();
   }
+  
 
   static async getResourceById(resourceId) {
     const response = await fetch(`${API_BASE_URL}/resources/${resourceId}`, {
@@ -755,6 +756,20 @@ class ApiService {
     
     return await response.json();
   }
+
+static async getReviews(resourceId) {
+     const response = await fetch(`${API_BASE_URL}/reviews/resource/${resourceId}`, {
+       credentials: 'include',
+     });
+     
+     if (!response.ok) {
+       if (response.status === 404) return [];
+       console.error("Failed to fetch reviews");
+       return [];
+     }
+     
+     return await response.json();
+   }
 }
 
 export default ApiService;

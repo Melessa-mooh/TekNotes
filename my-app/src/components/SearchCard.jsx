@@ -13,7 +13,6 @@ export default function SearchCard({ data, onRate, onDownload, onPreview, onComm
   const isMyUpload = currentUserId && (data.uploaderUserId === currentUserId || data.uploaderId === currentUserId);
   const uploaderDisplay = isMyUpload ? "You" : (data.uploadedBy || "Community");
 
-  // Check if resource is bookmarked
   useEffect(() => {
     const checkBookmark = async () => {
       if (currentUserId && data.id) {
@@ -64,20 +63,33 @@ export default function SearchCard({ data, onRate, onDownload, onPreview, onComm
   };
   
   return (
-    // ✅ Added style={{ position: 'relative' }} to ensure the button stays inside the card
     <div className="search-card-item" style={{ position: 'relative' }}>
       
-      {/* --- NEW COMMENT BUTTON (UPPER RIGHT) --- */}
-      <button 
-        className="comment-corner-btn" 
-        onClick={() => onCommentClick && onCommentClick(data)}
-        title="View Comments"
-      >
-        <MessageCircle size={18} />
-        <span className="comment-count">{data.reviews || 0}</span>
-      </button>
+      {/* --- TOP RIGHT ACTION GROUP --- */}
+      <div className="card-top-actions">
+        {/* Rate Button */}
+        <button className="btn-rate" onClick={() => onRate(data)}>
+           <Star size={14} /> Rate
+        </button>
 
-      {/* Top Section: Icon + Text */}
+        {/* ✅ FIXED COMMENT BUTTON */}
+        <button 
+          className="comment-corner-btn" 
+          onClick={(e) => {
+            e.stopPropagation(); // <--- THIS STOPS THE CLICK FROM FAILING
+            console.log("Button clicked!"); 
+            if (onCommentClick) {
+                onCommentClick(data);
+            }
+          }}
+          title="View Comments"
+        >
+          <MessageCircle size={18} />
+          <span className="comment-count">{data.reviews || 0}</span>
+        </button>
+      </div>
+
+      {/* Top Section */}
       <div className="card-header-section">
         <div className="file-icon-wrapper">
           <FileText size={24} strokeWidth={1.5} />
@@ -88,7 +100,7 @@ export default function SearchCard({ data, onRate, onDownload, onPreview, onComm
         </div>
       </div>
 
-      {/* Middle Section: Author, Date, Stats */}
+      {/* Middle Section */}
       <div className="card-meta-section">
         <div className="meta-left">
           <div className="meta-item">
@@ -105,7 +117,6 @@ export default function SearchCard({ data, onRate, onDownload, onPreview, onComm
             className="rating-badge" 
             onClick={() => setShowReviewsModal(true)}
             style={{ cursor: 'pointer' }}
-            title="Click to view reviews"
           >
             <Star size={12} fill="#fbbf24" stroke="none" />
             <span>{data.rating || 0} ({data.reviews || 0} reviews)</span>
@@ -117,7 +128,7 @@ export default function SearchCard({ data, onRate, onDownload, onPreview, onComm
         </div>
       </div>
 
-      {/* Bottom Section: Uploader & Buttons */}
+      {/* Bottom Section */}
       <div className="card-footer-section">
         <div className="uploader-block">
           <div className="uploader-avatar">
@@ -142,10 +153,6 @@ export default function SearchCard({ data, onRate, onDownload, onPreview, onComm
           >
             <Bookmark size={14} fill={isBookmarked ? '#fff' : 'none'} />
             {isBookmarked ? 'Saved' : 'Save'}
-          </button>
-          
-          <button className="btn-rate" onClick={() => onRate(data)}>
-            <Star size={14} /> Rate
           </button>
           
           <button className="btn-preview" onClick={() => onPreview(data)}>
