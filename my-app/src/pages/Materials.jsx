@@ -261,11 +261,9 @@ export default function Materials() {
             </div>
           </div>
           <div className="header-right">
-            <Link to="/uploads">
-                <button className="upload-btn-primary">
-                <Upload size={18} /> Upload
-                </button>
-            </Link>
+            <button className="upload-btn" onClick={() => navigate('/uploads')}>
+                          <Upload size={18} /> Upload
+                        </button>
             <button className="icon-btn"><Bell size={20} /></button>
             <button className="icon-btn"><User size={20} /></button>
           </div>

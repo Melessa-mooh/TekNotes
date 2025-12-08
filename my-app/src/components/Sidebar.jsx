@@ -1,5 +1,5 @@
 import React from "react";
-import { Link, useLocation, useNavigate} from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   FileText,
   MessageCircle,
@@ -12,14 +12,16 @@ import {
 } from "lucide-react";
 import "../styles/dashboard.css";
 
+// IMPORT YOUR LOGO
+import logo from "../assets/logotek.png"; 
+
 export default function Sidebar({ isOpen }) {
   const location = useLocation();
   const navigate = useNavigate();
 
-
   const isActive = (path) => location.pathname === path ? "nav-item active" : "nav-item";
 
- const handleLogout = () => {
+  const handleLogout = () => {
     localStorage.removeItem("userFullName");
     navigate("/login");
   };
@@ -27,7 +29,9 @@ export default function Sidebar({ isOpen }) {
   return (
     <aside className={`sidebar ${isOpen ? "open" : ""}`}>
       <div className="logo-section">
-        <div className="logo-icon">📚</div>
+        {/* LOGO IMAGE */}
+        <img src={logo} alt="TekNotes Logo" className="logo-image" />
+        
         <div className="logo-text">
           <h1>TekNotes</h1>
           <p>Academic Resources</p>
@@ -91,7 +95,6 @@ export default function Sidebar({ isOpen }) {
           <LogOut size={18} />
           Logout
         </button>
-
       </div>
     </aside>
   );
