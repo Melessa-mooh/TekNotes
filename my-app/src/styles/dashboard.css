@@ -34,8 +34,14 @@
   margin-bottom: 32px;
 }
 
-.logo-icon {
-  font-size: 32px;
+/* --- UPDATED LOGO STYLES --- */
+.logo-image {
+  width: 55px;
+  height: 55px;
+  object-fit: cover;
+  border-radius: 50%;     /* Makes it a circle */
+  border: 2px solid #e29219; /* Gold border to match mascot */
+  background: white;
 }
 
 .logo-text h1 {
@@ -164,7 +170,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #8B0000;
+  background:#5C0000;
   color: white;
   border: none;
   padding: 10px 20px;
@@ -175,7 +181,7 @@
 }
 
 .upload-btn:hover {
-  background: #5C0000;
+  background:#8B0000;
 }
 
 .icon-btn {
@@ -331,7 +337,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #8B0000;
+  color: #5C0000;
   flex-shrink: 0;
 }
 
