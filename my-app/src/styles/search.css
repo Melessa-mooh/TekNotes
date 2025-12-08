@@ -367,18 +367,26 @@
   }
 }
 
-
-/* --- Add this to the bottom of search.css --- */
+/* --- UPDATED SECTION BELOW --- */
 
 /* Ensure the card allows absolute positioning of children */
 .upload-card, .search-card-item {
   position: relative; 
 }
 
-.comment-corner-btn {
+/* NEW: Container to hold both buttons at the top right */
+.card-top-actions {
   position: absolute;
   top: 16px;
   right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Space between Rate and Comment buttons */
+  z-index: 10;
+}
+
+/* UPDATED: Removed absolute positioning here (handled by container now) */
+.comment-corner-btn {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -391,13 +399,12 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
-  z-index: 10;
   box-shadow: 0 1px 2px rgba(0,0,0,0.05);
 }
 
 .comment-corner-btn:hover {
   background: #f9fafb;
-  color: #111827; /* Darker text on hover */
+  color: #111827; 
   border-color: #d1d5db;
   transform: translateY(-1px);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
@@ -405,26 +412,4 @@
 
 .comment-count {
   margin-top: 1px; /* Optical alignment */
-}
-
-.comment-corner-btn {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: white;
-  border: 1px solid #e5e7eb;
-  padding: 6px 10px;
-  border-radius: 20px;
-  color: #6b7280;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  z-index: 10;
-}
-
-.comment-corner-btn:hover {
-  background: #f9fafb;
 }

@@ -12,6 +12,8 @@ import Swal from 'sweetalert2';
 import Sidebar from "../components/Sidebar";
 import SearchCard from "../components/SearchCard";
 import ReviewModal from "../components/ReviewModal"; 
+// ✅ 1. IMPORT THE NEW MODAL HERE
+import ResourceCommentsModal from "../components/ResourceCommentsModal"; 
 import ApiService from "../services/api"; 
 
 import "../styles/dashboard.css"; 
@@ -32,12 +34,15 @@ export default function SearchResources() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedResource, setSelectedResource] = useState(null);
 
+  // ✅ 2. NEW STATE FOR COMMENTS MODAL
+  const [selectedResourceForComments, setSelectedResourceForComments] = useState(null);
+
   // Data State
   const [allResources, setAllResources] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState(null);
 
-  // ✅ FETCH DATA & FIX UPLOADER NAME
+  // FETCH DATA & FIX UPLOADER NAME
   useEffect(() => {
     const fetchResources = async () => {
       try {
@@ -136,6 +141,12 @@ export default function SearchResources() {
     setIsModalOpen(true);
   };
 
+  // ✅ 3. NEW HANDLER FOR COMMENT CLICK
+  const handleCommentClick = (resource) => {
+    console.log("Opening comments for:", resource.title);
+    setSelectedResourceForComments(resource);
+  };
+
   // Submit Review to Backend
   const handleReviewSubmit = async (reviewData) => {
     if (!selectedResource) return;
@@ -204,11 +215,8 @@ export default function SearchResources() {
         return;
       }
 
-      // Track the download in the backend
       await ApiService.createDownload(userId, resourceId);
 
-      // Try to trigger actual file download if fileUrl exists
-      // Note: You may need to fetch the full resource to get fileUrl
       try {
         const fullResource = await ApiService.getResourceById(resourceId);
         if (fullResource.fileUrl) {
@@ -235,7 +243,6 @@ export default function SearchResources() {
         showConfirmButton: false
       });
 
-      // Trigger a custom event to notify dashboard to refresh
       window.dispatchEvent(new CustomEvent('downloadCompleted'));
     } catch (err) {
       console.error("Error downloading:", err);
@@ -333,6 +340,10 @@ export default function SearchResources() {
                     onRate={handleRateClick} 
                     onDownload={handleDownload}
                     onPreview={handlePreview}
+                    
+                    // ✅ 4. PASS THE HANDLER TO THE CARD
+                    onCommentClick={handleCommentClick} 
+                    
                     currentUserId={currentUserId}
                   />
                 ))
@@ -351,6 +362,17 @@ export default function SearchResources() {
           onSubmit={handleReviewSubmit}
           resourceTitle={selectedResource?.title}
         />
+
+        {/* ✅ 5. RENDER THE COMMENTS MODAL HERE */}
+        {selectedResourceForComments && (
+          <ResourceCommentsModal
+            isOpen={true}
+            resourceId={selectedResourceForComments.id}
+            resourceTitle={selectedResourceForComments.title}
+            currentUserId={currentUserId}
+            onClose={() => setSelectedResourceForComments(null)}
+          />
+        )}
       </main>
     </div>
   );
