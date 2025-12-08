@@ -757,6 +757,22 @@ class ApiService {
     return await response.json();
   }
 
+
+  static async deleteResource(resourceId) {
+ const response = await fetch(`${API_BASE_URL}/resources/${resourceId}`, {
+ method: 'DELETE',
+ credentials: 'include', // Use 'credentials: include' for session/cookie-based auth
+ });
+ 
+ if (!response.ok) {
+const errorMessage = await response.text();
+// Provide a descriptive error, which will be caught and shown in the frontend
+throw new Error(`Failed to delete resource: ${errorMessage || 'Server error'} (Status: ${response.status})`);
+ }
+ // A successful DELETE often returns a 204 No Content, so we don't return JSON
+ return true; 
+ }
+
 static async getReviews(resourceId) {
      const response = await fetch(`${API_BASE_URL}/reviews/resource/${resourceId}`, {
        credentials: 'include',
@@ -771,5 +787,6 @@ static async getReviews(resourceId) {
      return await response.json();
    }
 }
+
 
 export default ApiService;

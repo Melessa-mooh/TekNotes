@@ -119,7 +119,8 @@ export default function Reviews() {
     if (result.isConfirmed) {
       try {
         await ApiService.deleteReview(id);
-        const updatedReviews = reviews.filter((r) => r.id !== id);
+
+const updatedReviews = reviews.filter((r) => (r.id !== id && r.reviewId !== id));
         setReviews(updatedReviews);
         
         Swal.fire({
