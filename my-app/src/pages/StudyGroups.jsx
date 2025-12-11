@@ -197,11 +197,7 @@ export default function StudyGroups() {
 
   const extractTeacherName = (text) => {
     if (!text) return null;
-    // Try to extract teacher names - common patterns from the course listings
-    // Patterns include:
-    // 1. "Last, First" format: "BERNUS, JUDY", "Pantaleon, Cheryl Balan"
-    // 2. "Last, First Middle" format: "Dejos, Lanelyn Vestil"
-    // 3. Names after keywords: "by", "with", "teacher:", "instructor:"
+  
     const patterns = [
       // Last, First format (handles both ALL CAPS and Title Case)
       /\b([A-Z][A-Z\s,]+(?:[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)?),\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/,
