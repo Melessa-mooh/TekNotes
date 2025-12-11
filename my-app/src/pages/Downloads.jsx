@@ -3,8 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { 
   Search, 
   Upload, 
-  Bell, 
-  User, 
   Menu, 
   FileText, 
   Download, 
@@ -213,8 +211,6 @@ export default function Downloads() {
             <button className="upload-btn" onClick={() => navigate('/uploads')}>
               <Upload size={18} /> Upload
             </button>
-            <button className="icon-btn"><Bell size={20} /></button>
-            <button className="icon-btn"><User size={20} /></button>
           </div>
         </header>
 
@@ -286,7 +282,6 @@ export default function Downloads() {
                   {/* Author & Stats Meta */}
                   <div className="card-meta-row">
                     <div className="author-info">
-                      <User size={14} />
                       {/* Handle different data structures (uploaded vs public) */}
                       <span>{item.author || item.professor || item.instructor || "Unknown"}</span>
                       <span className="dot">•</span>
