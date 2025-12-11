@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Menu, FileText, Star, BookOpen, Clock } from "lucide-react";
+import { Menu, FileText, Star, BookOpen, Clock, Upload, Bell, User, Search } from "lucide-react"; 
 import Swal from 'sweetalert2';
 
 // Components
@@ -16,33 +16,24 @@ export default function Bookmarks() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedSubject, setSelectedSubject] = useState("All");
   const [bookmarks, setBookmarks] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState(null);
   const navigate = useNavigate();
 
-  // Load bookmarks from backend
+  // Load bookmarks
   useEffect(() => {
     const loadBookmarks = async () => {
       try {
         const storedUser = localStorage.getItem("teknotesUser");
         if (!storedUser) {
-          Swal.fire({
-            icon: 'warning',
-            title: 'Not Logged In',
-            text: 'Please login to view bookmarks',
-          });
           navigate('/login');
           return;
         }
-
         const user = JSON.parse(storedUser);
         const userId = user.id || user.userId;
         setCurrentUserId(userId);
 
-        // Fetch user's bookmarks from backend
         const userBookmarks = await ApiService.getUserBookmarks(userId);
         
-        // Map bookmark data to expected format
         const mappedBookmarks = userBookmarks.map(b => {
           const resource = b.resource || {};
           return {
@@ -63,64 +54,25 @@ export default function Bookmarks() {
         });
         
         setBookmarks(mappedBookmarks);
-        
-        Swal.fire({
-          icon: 'success',
-          title: 'Bookmarks Loaded',
-          text: `You have ${userBookmarks.length} bookmarks`,
-          timer: 2000,
-          showConfirmButton: false
-        });
       } catch (err) {
         console.error("Error loading bookmarks:", err);
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Failed to load bookmarks: ' + err.message
-        });
-      } finally {
-        setLoading(false);
       }
     };
-
     loadBookmarks();
   }, [navigate]);
 
-  // Delete bookmark handler
-  const handleDeleteBookmark = async (bookmarkId) => {
-    const result = await Swal.fire({
-      title: 'Remove Bookmark?',
-      text: "This will remove the bookmark from your list",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Yes, remove it!'
-    });
-
-    if (result.isConfirmed) {
-      try {
-        await ApiService.deleteBookmark(bookmarkId);
-        setBookmarks(bookmarks.filter(b => b.id !== bookmarkId));
-        
-        Swal.fire({
-          icon: 'success',
-          title: 'Removed!',
-          text: 'Bookmark has been removed',
-          timer: 1500,
-          showConfirmButton: false
-        });
-      } catch (err) {
-        Swal.fire({
-          icon: 'error',
-          title: 'Error',
-          text: 'Failed to remove bookmark: ' + err.message
-        });
-      }
-    }
+  const renderStars = (rating) => {
+    return [...Array(5)].map((_, i) => (
+      <Star 
+        key={i} 
+        size={14} 
+        fill={i < Math.round(rating) ? "#f59e0b" : "none"} 
+        color={i < Math.round(rating) ? "#f59e0b" : "#cbd5e1"}
+        style={{ marginRight: '1px' }}
+      />
+    ));
   };
 
-  // Filter Logic
   const filteredBookmarks = bookmarks.filter((item) => {
     const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesSubject = selectedSubject === "All" || item.subject === selectedSubject || 
@@ -130,84 +82,76 @@ export default function Bookmarks() {
 
   return (
     <div className="dashboard-container">
-      {/* Reusing the Sidebar */}
       <Sidebar isOpen={isSidebarOpen} />
 
-      {/* Main Layout Area */}
       <main className="main-content">
         
-        {/* Mobile Menu Button (Hidden on Desktop via dashboard.css) */}
-        <button 
-          className="menu-btn" 
-          onClick={() => setSidebarOpen(!isSidebarOpen)}
-          style={{ margin: "20px 0 0 20px" }} // distinct styling for this page
-        >
-          <Menu size={24} />
-        </button>
+        {/* --- HEADER --- */}
+        <header className="header">
+          <div className="header-left">
+            <button className="menu-btn" onClick={() => setSidebarOpen(!isSidebarOpen)}>
+              <Menu size={24} />
+            </button>
+            <h1 className="page-title">Bookmarks</h1>
+          </div>
+          <div className="header-right">
+            <button className="upload-btn" onClick={() => navigate('/uploads')}>
+              <Upload size={18} /> Upload
+            </button>
+            {/* Removed Bell and User icons as per previous request */}
+          </div>
+        </header>
 
-        {/* YOUR CSS STRUCTURE STARTS HERE */}
         <div className="bookmarks-container">
           
-          {/* HEADER */}
-          <div className="top-header">
-            <h1>My Bookmarks</h1>
-            <p>Access and manage your saved academic resources.</p>
-          </div>
-
-          {/* STATS */}
+          {/* STATS ROW - "Read Later" Card Removed */}
           <div className="stats-row">
             <div className="stats-card">
-              <div className="stat-icon">
-                <BookOpen size={20} style={{ margin: "7px", color: "#555" }} />
+              <div className="stat-icon-square red">
+                <BookOpen size={24} />
               </div>
-              <div>
-                <h2>{bookmarks.length}</h2>
-                <span style={{ fontSize: "12px", color: "#777" }}>Total Saved</span>
-              </div>
-            </div>
-            
-            <div className="stats-card">
-              <div className="stat-icon">
-                <Clock size={20} style={{ margin: "7px", color: "#555" }} />
-              </div>
-              <div>
-                <h2>12</h2>
-                <span style={{ fontSize: "12px", color: "#777" }}>Read Later</span>
+              <div className="stat-info-download">
+                <h3>{bookmarks.length}</h3>
+                <p>Total Saved</p>
               </div>
             </div>
           </div>
 
           {/* SEARCH ROW */}
           <div className="search-filter-row">
-            <input 
-              type="text" 
-              className="search-bar" 
-              placeholder="Search by title..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+            <div className="search-wrapper">
+                <Search size={20} className="search-icon" />
+                <input 
+                  type="text" 
+                  placeholder="Search bookmarks..." 
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+            </div>
             
-            <select 
-              className="subjects-dropdown"
-              value={selectedSubject}
-              onChange={(e) => setSelectedSubject(e.target.value)}
-            >
-              <option value="All">All Subjects</option>
-              <option value="Appdev">Appdev</option>
-              <option value="TeckNo">TeckNo</option>
-              <option value="Networking1">Networking1</option>
-              <option value="Networking2">Networking2</option>
-              <option value="IM1">IM1</option>
-              <option value="IM2">IM2</option>
-              <option value="OOP1">OOP1</option>
-              <option value="OOP2">OOP2</option>
-              <option value="Electives">Electives</option>
-              <option value="Project Management">Project Management</option>
-            </select>
+            <div className="filter-actions">
+                <select 
+                  className="subjects-dropdown"
+                  value={selectedSubject}
+                  onChange={(e) => setSelectedSubject(e.target.value)}
+                >
+                  <option value="All">All Subjects</option>
+                  <option value="Appdev">Appdev</option>
+                  <option value="TeckNo">TeckNo</option>
+                  <option value="Networking1">Networking1</option>
+                  <option value="Networking2">Networking2</option>
+                  <option value="IM1">IM1</option>
+                  <option value="IM2">IM2</option>
+                  <option value="OOP1">OOP1</option>
+                  <option value="OOP2">OOP2</option>
+                  <option value="Electives">Electives</option>
+                  <option value="Project Management">Project Management</option>
+                </select>
 
-            <button className="my-bookmarks-btn">
-              My List
-            </button>
+                <button className="my-bookmarks-btn">
+                  My List
+                </button>
+            </div>
           </div>
 
           {/* CARDS GRID */}
@@ -215,32 +159,48 @@ export default function Bookmarks() {
             {filteredBookmarks.length > 0 ? (
               filteredBookmarks.map((item) => (
                 <div key={item.id} className="bookmark-card">
-                  <div className="bookmark-icon">
-                    <FileText />
+                  
+                  {/* ICON */}
+                  <div className="card-icon-container">
+                    <FileText size={24} strokeWidth={1.5} />
                   </div>
                   
-                  <div className="card-content" style={{ flex: 1 }}>
-                    <h3>{item.title}</h3>
-                    <p>{item.subject} • {item.professor}</p>
-                    <p style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
-                      Uploaded by {item.uploaderName || item.uploadedBy || 'Unknown'}
-                      {currentUserId && item.uploaderUserId === currentUserId && (
-                        <span style={{ marginLeft: '8px', color: '#5C0000', fontWeight: 'bold' }}>• Your Resource</span>
-                      )}
-                    </p>
+                  {/* CONTENT */}
+                  <div className="card-content">
+                    <div className="card-header-row">
+                        <h3>{item.title}</h3>
+                        <p className="subtitle">{item.subject} • {item.professor}</p>
+                    </div>
                     
-                    <div className="card-meta">
-                      <span className="file-type">{item.fileType}</span>
-                      <span className="rating">⭐ {item.rating || 0} ({item.reviews || 0} reviews)</span>
-                      <span style={{ marginLeft: "auto" }}>{item.date}</span>
+                    <div className="card-meta-row">
+                        <span className="file-type-badge">{item.fileType}</span>
+                        
+                        {/* 5 STARS DISPLAY */}
+                        <div className="rating-container">
+                            <div className="stars-row">
+                                {renderStars(item.rating)}
+                            </div>
+                            <span className="review-count">
+                                ({item.reviews || 0})
+                            </span>
+                        </div>
+
+                        <span className="date-info">
+                           <Clock size={14} />
+                           {item.date}
+                        </span>
                     </div>
                   </div>
                 </div>
               ))
             ) : (
-              <p style={{ color: "#777", gridColumn: "span 2", textAlign: "center" }}>
-                {selectedSubject === "All" ? "No bookmarks found matching your search." : `No Matching File for "${selectedSubject}"`}
-              </p>
+                <div className="empty-state-container">
+                    <div className="empty-folder-icon">
+                        <BookOpen size={48} color="#fcd34d" fill="#fcd34d" />
+                    </div>
+                    <h3>No bookmarks yet</h3>
+                    <p>Visit the Materials page to find and save resources.</p>
+                </div>
             )}
           </div>
 
