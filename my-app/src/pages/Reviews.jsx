@@ -18,6 +18,7 @@ import Swal from 'sweetalert2';
 import Sidebar from "../components/Sidebar";
 import ApiService from "../services/api";
 import CommentsModal from "../components/CommentsModal";
+import EditReviewModal from "../components/EditReviewModal";
 import "../styles/dashboard.css"; 
 import "../styles/reviews.css";   
 
@@ -28,6 +29,9 @@ export default function Reviews() {
   const [currentUserId, setCurrentUserId] = useState(null);
   const [selectedReviewId, setSelectedReviewId] = useState(null);
   const [showCommentsModal, setShowCommentsModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedReview, setSelectedReview] = useState(null);
+  const [selectedSubject, setSelectedSubject] = useState("All Subjects");
   const navigate = useNavigate();
 
   // Load reviews from backend
@@ -140,11 +144,71 @@ const updatedReviews = reviews.filter((r) => (r.id !== id && r.reviewId !== id))
     }
   };
 
-  
-  const totalReviews = reviews.length;
-  const totalLikes = reviews.reduce((sum, item) => sum + (item.likes || 0), 0);
+  const handleEdit = (review) => {
+    // Only allow owners to edit their reviews
+    if (currentUserId && review.userId === currentUserId) {
+      setSelectedReview(review);
+      setShowEditModal(true);
+    } else {
+      Swal.fire({
+        icon: 'error',
+        title: 'Unauthorized',
+        text: 'You can only edit your own reviews.'
+      });
+    }
+  };
+
+  const handleUpdateReview = async (updatedData) => {
+    try {
+      const reviewId = selectedReview.reviewId || selectedReview.id;
+      await ApiService.updateReview(reviewId, {
+        rating: updatedData.rating,
+        comment: updatedData.comment
+      });
+
+      // Refresh reviews
+      const allReviews = await ApiService.getAllReviews(currentUserId);
+      setReviews(allReviews);
+
+      setShowEditModal(false);
+      setSelectedReview(null);
+
+      Swal.fire({
+        icon: 'success',
+        title: 'Updated!',
+        text: 'Your review has been updated',
+        timer: 1500,
+        showConfirmButton: false
+      });
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'Failed to update review: ' + err.message
+      });
+    }
+  };
+
+  // Filter reviews based on selected subject
+  const filteredReviews = reviews.filter((review) => {
+    if (selectedSubject === "All Subjects") {
+      return true;
+    }
+    
+    // Check if the review's resource matches the selected subject
+    const resource = review.resource;
+    if (!resource) return false;
+    
+    const resourceSubject = resource.courseName || resource.subject || "";
+    const resourceCourseCode = resource.courseCode || "";
+    
+    return resourceSubject === selectedSubject || resourceCourseCode === selectedSubject;
+  });
+
+  const totalReviews = filteredReviews.length;
+  const totalLikes = filteredReviews.reduce((sum, item) => sum + (item.likes || 0), 0);
   const avgRating = totalReviews > 0 
-    ? (reviews.reduce((sum, item) => sum + item.rating, 0) / totalReviews).toFixed(1) 
+    ? (filteredReviews.reduce((sum, item) => sum + item.rating, 0) / totalReviews).toFixed(1) 
     : 0;
 
   const stats = [
@@ -213,23 +277,67 @@ const updatedReviews = reviews.filter((r) => (r.id !== id && r.reviewId !== id))
               <input type="text" placeholder="Search reviews..." />
             </div>
             <div className="filter-dropdowns">
-              <select className="filter-select">
-                <option>All Subjects</option>
-                <option>Math</option>
-                <option>Science</option>
-              </select>
-              <select className="filter-select">
-                <option>All Subjects</option>
-                <option>Newest</option>
-                <option>Oldest</option>
-              </select>
+              <div style={{ display: "flex", gap: "15px", alignItems: "center" }}>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: "block", marginBottom: "5px", fontSize: "13px", fontWeight: "600", color: "#64748b" }}>
+                    Filter by Subject
+                  </label>
+                  <select
+                    className="filter-select"
+                    value={selectedSubject}
+                    onChange={(e) => setSelectedSubject(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "10px 15px",
+                      borderRadius: "8px",
+                      border: "1px solid #cbd5e1",
+                      fontSize: "14px",
+                      background: "#fff",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <option>All Subjects</option>
+                    <option>Appdev</option>
+                    <option>TeckNo</option>
+                    <option>Networking1</option>
+                    <option>Networking2</option>
+                    <option>IM1</option>
+                    <option>IM2</option>
+                    <option>OOP1</option>
+                    <option>OOP2</option>
+                    <option>Electives</option>
+                    <option>Project Management</option>
+                  </select>
+                </div>
+                <div style={{ flex: 1 }}>
+                  <label style={{ display: "block", marginBottom: "5px", fontSize: "13px", fontWeight: "600", color: "#64748b" }}>
+                    Sort by
+                  </label>
+                  <select
+                    className="filter-select"
+                    style={{
+                      width: "100%",
+                      padding: "10px 15px",
+                      borderRadius: "8px",
+                      border: "1px solid #cbd5e1",
+                      fontSize: "14px",
+                      background: "#fff",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <option>All Subjects</option>
+                    <option>Newest</option>
+                    <option>Oldest</option>
+                  </select>
+                </div>
+              </div>
             </div>
           </div>
 
           {/* Reviews List */}
           <div className="reviews-list">
-            {reviews.length > 0 ? (
-              reviews.map((review) => (
+            {filteredReviews.length > 0 ? (
+              filteredReviews.map((review) => (
                
                 <div key={review.reviewId || review.id} className="review-card">
                   
@@ -244,7 +352,9 @@ const updatedReviews = reviews.filter((r) => (r.id !== id && r.reviewId !== id))
                       </p>
                     </div>
                     <div className="card-actions">
-                      <button className="action-btn edit"><Edit2 size={18} /></button>
+                      <button className="action-btn edit" onClick={() => handleEdit(review)}>
+                        <Edit2 size={18} />
+                      </button>
                       <button className="action-btn delete" onClick={() => handleDelete(review.reviewId || review.id)}>
                         <Trash2 size={18} />
                       </button>
@@ -298,7 +408,7 @@ const updatedReviews = reviews.filter((r) => (r.id !== id && r.reviewId !== id))
               ))
             ) : (
               <div style={{textAlign: "center", color: "#888", marginTop: "40px"}}>
-                <p>No reviews yet. Go to Search Resources to add one!</p>
+                <p>{selectedSubject === "All Subjects" ? "No reviews yet. Go to Search Resources to add one!" : `No Matching File for "${selectedSubject}"`}</p>
               </div>
             )}
           </div>
@@ -316,6 +426,17 @@ const updatedReviews = reviews.filter((r) => (r.id !== id && r.reviewId !== id))
           }}
           reviewId={selectedReviewId}
           currentUserId={currentUserId}
+        />
+        
+        <EditReviewModal
+          isOpen={showEditModal}
+          onClose={() => {
+            setShowEditModal(false);
+            setSelectedReview(null);
+          }}
+          onSubmit={handleUpdateReview}
+          resourceTitle={selectedReview?.resourceTitle || (selectedReview?.resource ? selectedReview.resource.title : "Resource Review")}
+          initialReview={selectedReview}
         />
       </main>
     </div>

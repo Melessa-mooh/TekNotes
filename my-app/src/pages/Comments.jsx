@@ -65,12 +65,13 @@ export default function Comments() {
       Swal.fire("Error", "Download failed", "error");
     }
   };
-  const handlePreview = (data) => window.open(`/preview/${data.id}`, '_blank');
+  const handlePreview = (data) => window.open(`/resources/${data.id}`, '_blank');
 
   const filteredResources = resources.filter((file) => {
     const matchesSearch = file.title.toLowerCase().includes(searchQuery) || 
                           file.description?.toLowerCase().includes(searchQuery);
-    const matchesSubject = selectedSubject === "All Subjects" || file.subject === selectedSubject;
+    const matchesSubject = selectedSubject === "All Subjects" || file.subject === selectedSubject || 
+                          (file.courseCode && file.courseCode === selectedSubject);
     return matchesSearch && matchesSubject;
   });
 
@@ -92,14 +93,58 @@ export default function Comments() {
           />
         </div>
         <div className="dropdown-filters">
-          <select className="filter-dropdown" value={selectedSubject} onChange={handleSubjectChange}>
-            <option value="All Subjects">All Subjects</option>
-            <option value="Mathematics">Mathematics</option>
-            <option value="Science">Science</option>
-            <option value="History">History</option>
-            <option value="Computer Science">Computer Science</option>
-          </select>
-          <button className="filter-dropdown"><SlidersHorizontal size={14} /> Filters</button>
+          <div style={{ display: "flex", gap: "15px", alignItems: "center" }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ display: "block", marginBottom: "5px", fontSize: "13px", fontWeight: "600", color: "#64748b" }}>
+                Filter by Subject
+              </label>
+              <select 
+                className="filter-dropdown" 
+                value={selectedSubject} 
+                onChange={handleSubjectChange}
+                style={{
+                  width: "100%",
+                  padding: "10px 15px",
+                  borderRadius: "8px",
+                  border: "1px solid #cbd5e1",
+                  fontSize: "14px",
+                  background: "#fff",
+                  cursor: "pointer",
+                }}
+              >
+                <option value="All Subjects">All Subjects</option>
+                <option value="Appdev">Appdev</option>
+                <option value="TeckNo">TeckNo</option>
+                <option value="Networking1">Networking1</option>
+                <option value="Networking2">Networking2</option>
+                <option value="IM1">IM1</option>
+                <option value="IM2">IM2</option>
+                <option value="OOP1">OOP1</option>
+                <option value="OOP2">OOP2</option>
+                <option value="Electives">Electives</option>
+                <option value="Project Management">Project Management</option>
+              </select>
+            </div>
+            {selectedSubject !== "All Subjects" && (
+              <button
+                onClick={() => handleSubjectChange({ target: { value: "All Subjects" } })}
+                style={{
+                  padding: "10px 20px",
+                  background: "#f1f5f9",
+                  color: "#64748b",
+                  border: "1px solid #cbd5e1",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  fontWeight: "600",
+                  marginTop: "24px",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                Clear Filter
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -120,7 +165,9 @@ export default function Comments() {
             />
           ))
         ) : (
-          <div className="no-results"><p>No resources found.</p></div>
+          <div className="no-results">
+            <p>{selectedSubject === "All Subjects" ? "No resources found." : `No matching notes for "${selectedSubject}"`}</p>
+          </div>
         )}
       </div>
 

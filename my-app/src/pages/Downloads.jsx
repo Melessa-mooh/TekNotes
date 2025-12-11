@@ -6,21 +6,19 @@ import {
   Bell, 
   User, 
   Menu, 
-  Bookmark, 
-  Folder, 
-  Heart, 
   FileText, 
-  Star, 
-  Download,
-  Trash2
+  Download, 
+  Trash2, 
+  Star,
+  BookOpen
 } from "lucide-react";
 import Swal from 'sweetalert2';
 
 import Sidebar from "../components/Sidebar";
 import ApiService from "../services/api";
 import ReviewsModal from "../components/ReviewsModal";
-import "../styles/dashboard.css"; 
-import "../styles/downloads.css"; 
+import "../styles/dashboard.css";
+import "../styles/downloads.css";
 
 export default function Downloads() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -29,6 +27,7 @@ export default function Downloads() {
   const [currentUserId, setCurrentUserId] = useState(null);
   const [selectedResource, setSelectedResource] = useState(null);
   const [showReviewsModal, setShowReviewsModal] = useState(false);
+  const [selectedSubject, setSelectedSubject] = useState("All Subjects");
   const navigate = useNavigate();
 
   // Load user downloads from backend
@@ -155,11 +154,7 @@ export default function Downloads() {
     return () => window.removeEventListener('focus', handleFocus);
   }, []);
 
-  const stats = [
-    { label: "Reviews Written", count: 5, icon: Bookmark, color: "red" },
-    { label: "Folders", count: 5, icon: Folder, color: "yellow" },
-    { label: "Total Downloads", count: downloads.length, icon: Heart, color: "green" }, // Dynamic count
-  ];
+
 
   // ✅ 2. ADDED DELETE FUNCTION
   const handleDelete = async (e, itemId) => {
@@ -190,6 +185,18 @@ export default function Downloads() {
     }
   };
 
+  // Filter downloads based on selected subject
+  const filteredDownloads = downloads.filter((item) => {
+    if (selectedSubject === "All Subjects") {
+      return true;
+    }
+    
+    const itemSubject = item.subject || item.courseName || "";
+    const itemCourseCode = item.courseCode || "";
+    
+    return itemSubject === selectedSubject || itemCourseCode === selectedSubject;
+  });
+
   return (
     <div className="dashboard-container">
       <Sidebar isOpen={isSidebarOpen} />
@@ -213,24 +220,6 @@ export default function Downloads() {
 
         <div className="downloads-container">
           
-          {/* Stats Row */}
-          <div className="stats-row">
-            {stats.map((stat, index) => {
-              const Icon = stat.icon;
-              return (
-                <div className="stat-card-download" key={index}>
-                  <div className={`stat-icon-square ${stat.color}`}>
-                    <Icon size={20} />
-                  </div>
-                  <div className="stat-info-download">
-                    <h3>{stat.count}</h3>
-                    <p>{stat.label}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
           {/* Filter Bar */}
           <div className="downloads-toolbar">
             <div className="search-bar-download">
@@ -239,10 +228,18 @@ export default function Downloads() {
             </div>
             
             <div className="toolbar-right">
-              <select className="subject-select">
+              <select className="subject-select" value={selectedSubject} onChange={(e) => setSelectedSubject(e.target.value)}>
                 <option>All Subjects</option>
-                <option>Math</option>
-                <option>Science</option>
+                <option>Appdev</option>
+                <option>TeckNo</option>
+                <option>Networking1</option>
+                <option>Networking2</option>
+                <option>IM1</option>
+                <option>IM2</option>
+                <option>OOP1</option>
+                <option>OOP2</option>
+                <option>Electives</option>
+                <option>Project Management</option>
               </select>
               <button className="my-downloads-btn">My Downloads</button>
             </div>
@@ -250,8 +247,8 @@ export default function Downloads() {
 
           {/* Downloads Grid */}
           <div className="downloads-grid">
-            {downloads.length > 0 ? (
-              downloads.map((item) => (
+            {filteredDownloads.length > 0 ? (
+              filteredDownloads.map((item) => (
                 <div key={item.id} className="download-card-large">
                   
                   {/* --- 3. ADDED DELETE BUTTON --- */}
@@ -354,7 +351,7 @@ export default function Downloads() {
                           });
                         }}
                       >
-                        Preview
+                        View
                       </button>
                       <button className="download-action-btn">
                         <Download size={14} /> Downloaded
@@ -367,8 +364,8 @@ export default function Downloads() {
             ) : (
               <div style={{gridColumn: "1/-1", textAlign: "center", padding: "60px", color: "#64748b"}}>
                 <div style={{fontSize: "48px", marginBottom: "16px", opacity: 0.5}}>📂</div>
-                <h3>No downloads yet</h3>
-                <p>Visit the Search Resources page to find and download materials.</p>
+                <h3>{selectedSubject === "All Subjects" ? "No downloads yet" : `No Matching File for "${selectedSubject}"`}</h3>
+                <p>{selectedSubject === "All Subjects" ? "Visit the Search Resources page to find and download materials." : "Try selecting a different subject or visit Search Resources to find materials."}</p>
               </div>
             )}
           </div>

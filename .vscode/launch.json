@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Spring Boot-BcdApplication<bcd>",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "mainClass": "com.appdevg4.bcd.teknotes.BcdApplication",
+            "projectName": "bcd",
+            "args": "",
+            "envFile": "${workspaceFolder}/.env"
+        }
+    ]
+}

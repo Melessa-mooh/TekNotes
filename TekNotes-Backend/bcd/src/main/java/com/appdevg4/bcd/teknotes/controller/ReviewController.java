@@ -70,6 +70,15 @@ public class ReviewController {
         service.delete(id);
     }
 
+    @PutMapping("/{id}")
+    public ReviewDto update(@PathVariable Integer id, @RequestBody ReviewRequest request) {
+        Review review = new Review();
+        review.setRating(request.getRating());
+        review.setComment(request.getComment());
+        Review updatedReview = service.update(id, review);
+        return ReviewDto.from(updatedReview);
+    }
+
     @GetMapping("/user/{userId}")
     public List<ReviewDto> getUserReviews(@PathVariable Integer userId) {
         return service.findByUserId(userId).stream()

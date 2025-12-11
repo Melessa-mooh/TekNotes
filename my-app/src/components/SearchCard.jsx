@@ -156,7 +156,7 @@ export default function SearchCard({ data, onRate, onDownload, onPreview, onComm
           </button>
           
           <button className="btn-preview" onClick={() => onPreview(data)}>
-            Preview
+            View
           </button>
           
           <button className="btn-download" onClick={() => onDownload(data)}>

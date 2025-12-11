@@ -14,7 +14,7 @@ import {
 
 import Sidebar from "../components/Sidebar";
 import "../styles/dashboard.css";
-import "../styles/preview.css"; 
+import "../styles/resources.css"; 
 
 export default function FilePreview() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
@@ -43,7 +43,7 @@ export default function FilePreview() {
 
     // 1. If it's an Image
     if (fileType && fileType.startsWith("image/")) {
-      return <img src={fileContent} alt="Preview" className="preview-image" />;
+      return <img src={fileContent} alt="View" className="preview-image" />;
     }
 
     // 2. If it's a PDF
@@ -53,7 +53,7 @@ export default function FilePreview() {
       return (
         <iframe 
           src={`${fileContent}#toolbar=0&navpanes=0&view=FitH`} 
-          title="PDF Preview"
+          title="PDF View"
           className="preview-iframe" 
         />
       );
@@ -78,7 +78,7 @@ export default function FilePreview() {
            </p>
            <br />
            <p className="watermark-text">
-             (This is a preview of the document content. Download to view the full file.)
+             (This is a view of the document content. Download to view the full file.)
            </p>
         </div>
       </div>

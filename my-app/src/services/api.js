@@ -307,6 +307,40 @@ class ApiService {
     }
   }
 
+  static async updateReview(reviewId, reviewData) {
+    const response = await fetch(`${API_BASE_URL}/reviews/${reviewId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify(reviewData),
+    });
+    
+    if (!response.ok) {
+      let errorMessage = 'Server error';
+      try {
+        const errorText = await response.text();
+        errorMessage = errorText || `HTTP ${response.status}`;
+      } catch (e) {
+        errorMessage = `HTTP ${response.status}`;
+      }
+      throw new Error(`Failed to update review: ${errorMessage}`);
+    }
+    
+    try {
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        return await response.json();
+      } else {
+        return {};
+      }
+    } catch (e) {
+      console.warn('Response was not valid JSON, but request succeeded');
+      return {};
+    }
+  }
+
   // Download endpoints
   static async getUserDownloads(userId) {
     const response = await fetch(`${API_BASE_URL}/downloads/user/${userId}`, {
@@ -545,6 +579,20 @@ class ApiService {
     
     if (!response.ok) {
       return 0;
+    }
+    
+    return await response.json();
+  }
+
+  // Course endpoints
+  static async getAllCourses() {
+    const response = await fetch(`${API_BASE_URL}/courses`, {
+      credentials: 'include',
+    });
+    
+    if (!response.ok) {
+      const errorMessage = await response.text();
+      throw new Error(`Failed to fetch courses: ${errorMessage || 'Server error'} (Status: ${response.status})`);
     }
     
     return await response.json();

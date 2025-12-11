@@ -38,7 +38,7 @@ export default function App() {
          <Route path="/materials" element={<Materials />} />
          <Route path="/downloads" element={<Downloads />} />
     
-         <Route path="/preview/:id" element={<FilePreview />} />
+         <Route path="/resources/:id" element={<FilePreview />} />
          <Route path="/settings" element={<Settings />} />
          <Route path="/settings/profile" element={<ProfileSettings />} />
  

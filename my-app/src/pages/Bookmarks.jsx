@@ -123,7 +123,8 @@ export default function Bookmarks() {
   // Filter Logic
   const filteredBookmarks = bookmarks.filter((item) => {
     const matchesSearch = item.title.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesSubject = selectedSubject === "All" || item.subject === selectedSubject;
+    const matchesSubject = selectedSubject === "All" || item.subject === selectedSubject || 
+                          (item.courseCode && item.courseCode === selectedSubject);
     return matchesSearch && matchesSubject;
   });
 
@@ -192,10 +193,16 @@ export default function Bookmarks() {
               onChange={(e) => setSelectedSubject(e.target.value)}
             >
               <option value="All">All Subjects</option>
-              <option value="Computer Science">Computer Science</option>
-              <option value="Mathematics">Mathematics</option>
-              <option value="History">History</option>
-              <option value="Physics">Physics</option>
+              <option value="Appdev">Appdev</option>
+              <option value="TeckNo">TeckNo</option>
+              <option value="Networking1">Networking1</option>
+              <option value="Networking2">Networking2</option>
+              <option value="IM1">IM1</option>
+              <option value="IM2">IM2</option>
+              <option value="OOP1">OOP1</option>
+              <option value="OOP2">OOP2</option>
+              <option value="Electives">Electives</option>
+              <option value="Project Management">Project Management</option>
             </select>
 
             <button className="my-bookmarks-btn">
@@ -232,7 +239,7 @@ export default function Bookmarks() {
               ))
             ) : (
               <p style={{ color: "#777", gridColumn: "span 2", textAlign: "center" }}>
-                No bookmarks found matching your search.
+                {selectedSubject === "All" ? "No bookmarks found matching your search." : `No Matching File for "${selectedSubject}"`}
               </p>
             )}
           </div>

@@ -39,12 +39,14 @@ export default function SearchResources() {
 
   // Data State
   const [allResources, setAllResources] = useState([]);
+  const [allCourses, setAllCourses] = useState([]);
+  const [availableCourses, setAvailableCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState(null);
 
   // FETCH DATA & FIX UPLOADER NAME
   useEffect(() => {
-    const fetchResources = async () => {
+    const fetchData = async () => {
       try {
         // Get current user ID
         const storedUser = localStorage.getItem("teknotesUser");
@@ -54,9 +56,15 @@ export default function SearchResources() {
         }
 
         setLoading(true);
-        const data = await ApiService.getAllResources();
+        
+        // Fetch resources
+        const resourcesData = await ApiService.getAllResources();
+        
+        // Fetch courses
+        const coursesData = await ApiService.getAllCourses();
+        setAllCourses(coursesData);
 
-        const resourcesArray = Array.isArray(data) ? data : [];
+        const resourcesArray = Array.isArray(resourcesData) ? resourcesData : [];
         
         // Map Backend Data -> Frontend UI Structure
         const mappedData = resourcesArray.map((item) => {
@@ -87,19 +95,30 @@ export default function SearchResources() {
         });
 
         setAllResources(mappedData);
+        
+        // Extract unique courses that have resources
+        const coursesWithResources = [...new Set(mappedData.map(item => item.courseName || "General"))];
+        const availableCourseObjects = coursesData.filter(course => 
+          coursesWithResources.includes(course.courseName)
+        );
+        // Also include "General" course if there are resources without proper course names
+        if (coursesWithResources.includes("General")) {
+          availableCourseObjects.push({ courseName: "General", courseId: 0 });
+        }
+        setAvailableCourses(availableCourseObjects);
       } catch (error) {
-        console.error("Error fetching resources:", error);
+        console.error("Error fetching data:", error);
         Swal.fire({
           icon: 'error',
           title: 'Connection Error',
-          text: error.message || 'Could not load resources.'
+          text: error.message || 'Could not load data.'
         });
       } finally {
         setLoading(false);
       }
     };
 
-    fetchResources();
+    fetchData();
   }, []);
 
   // Filter Logic - Search across multiple fields
@@ -108,7 +127,8 @@ export default function SearchResources() {
     
     // If search query is empty, only filter by category
     if (!query) {
-      return activeCategory === "All" || item.subject === activeCategory;
+      return activeCategory === "All" || item.courseName === activeCategory || 
+             (item.courseCode && item.courseCode === activeCategory);
     }
     
     // Safety checks and normalize to lowercase
@@ -130,7 +150,9 @@ export default function SearchResources() {
       courseCode.includes(query) ||
       description.includes(query);
     
-    const matchesCategory = activeCategory === "All" || item.subject === activeCategory;
+    const matchesCategory = activeCategory === "All" || 
+                          item.courseName === activeCategory || 
+                          (item.courseCode && item.courseCode === activeCategory);
     
     return matchesSearch && matchesCategory;
   });
@@ -304,24 +326,87 @@ export default function SearchResources() {
         </header>
 
         <div className="search-page-container">
-          <div className="search-toolbar-wrapper">
-            <div className="main-search-input">
-              <Search size={20} className="search-icon-gray" />
-              <input 
-                type="text" 
-                placeholder="Search by Course, Instructor, Department, Tags, or Course Code..." 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+          <div style={{ marginBottom: "20px" }}>
+            {/* Search Bar */}
+            <div style={{ display: "flex", gap: "15px", marginBottom: "15px", alignItems: "center" }}>
+              <div style={{ flex: 1, position: "relative" }}>
+                <Search
+                  size={20}
+                  style={{
+                    position: "absolute",
+                    left: "15px",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    color: "#64748b",
+                  }}
+                />
+                <input
+                  type="text"
+                  placeholder="Search by Course, Instructor, Department, Tags, or Course Code..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "12px 15px 12px 45px",
+                    borderRadius: "8px",
+                    border: "1px solid #cbd5e1",
+                    fontSize: "14px",
+                  }}
+                />
+              </div>
             </div>
-            <div className="dropdown-filters">
-              <select className="filter-dropdown" onChange={(e) => setActiveCategory(e.target.value)}>
-                <option value="All">All Subjects</option>
-                <option value="Computer Science">Computer Science</option>
-                <option value="Psychology">Psychology</option>
-                <option value="Mathematics">Mathematics</option>
-                <option value="Science">Science</option>
-              </select>
+
+            {/* Filter Dropdowns */}
+            <div style={{ display: "flex", gap: "15px", alignItems: "center" }}>
+              <div style={{ flex: 1 }}>
+                <label style={{ display: "block", marginBottom: "5px", fontSize: "13px", fontWeight: "600", color: "#64748b" }}>
+                  Filter by Course
+                </label>
+                <select
+                  value={activeCategory}
+                  onChange={(e) => setActiveCategory(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "10px 15px",
+                    borderRadius: "8px",
+                    border: "1px solid #cbd5e1",
+                    fontSize: "14px",
+                    background: "#fff",
+                    cursor: "pointer",
+                  }}
+                >
+                  <option value="All">All Courses</option>
+                  <option value="Appdev">Appdev</option>
+                  <option value="TeckNo">TeckNo</option>
+                  <option value="Networking1">Networking1</option>
+                  <option value="Networking2">Networking2</option>
+                  <option value="IM1">IM1</option>
+                  <option value="IM2">IM2</option>
+                  <option value="OOP1">OOP1</option>
+                  <option value="OOP2">OOP2</option>
+                  <option value="Electives">Electives</option>
+                  <option value="Project Management">Project Management</option>
+                </select>
+              </div>
+              {activeCategory !== "All" && (
+                <button
+                  onClick={() => setActiveCategory("All")}
+                  style={{
+                    padding: "10px 20px",
+                    background: "#f1f5f9",
+                    color: "#64748b",
+                    border: "1px solid #cbd5e1",
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                    fontSize: "14px",
+                    fontWeight: "600",
+                    marginTop: "24px",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  Clear Filter
+                </button>
+              )}
             </div>
           </div>
 
@@ -349,7 +434,7 @@ export default function SearchResources() {
                 ))
               ) : (
                 <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px', color: '#888' }}>
-                  <p>No resources found matching your search.</p>
+                  <p>{activeCategory === "All" ? "No resources found matching your search." : `No matching notes for "${activeCategory}"`}</p>
                 </div>
               )}
             </div>

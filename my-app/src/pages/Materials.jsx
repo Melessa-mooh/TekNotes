@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { 
   Search, 
   Upload, 
@@ -8,29 +8,26 @@ import {
   Menu, 
   FileText, 
   Download, 
-  Star,
-  CheckCircle,
-  File,
+  CheckCircle, 
+  Trash2, 
+  Star, 
   Bookmark,
-  Trash2 
+  File
 } from "lucide-react";
 import Swal from 'sweetalert2';
 
 import Sidebar from "../components/Sidebar";
-import Header from "../components/Header";
 import ApiService from "../services/api";
-import "../styles/dashboard.css"; 
-import "../styles/materials.css"; 
+import "../styles/dashboard.css";
+import "../styles/materials.css";
 
 export default function Materials() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
-  const navigate = useNavigate();
-
   const [materials, setMaterials] = useState([]);
   const [loading, setLoading] = useState(true);
-  
-  // 1. ADD SEARCH STATE
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedSubject, setSelectedSubject] = useState("All Subjects");
+  const navigate = useNavigate();
 
   // Load materials from backend
   useEffect(() => {
@@ -76,19 +73,29 @@ export default function Materials() {
     loadMaterials();
   }, [navigate]);
 
-  // 2. CREATE FILTER LOGIC
   // This checks if the Search Term exists in the Title OR the Description
   const filteredMaterials = materials.filter((item) => {
-    if (!searchTerm) return true; // Show all if search is empty
+    // Search filter
+    if (searchTerm) {
+      const lowerTerm = searchTerm.toLowerCase();
+      const titleMatch = item.title?.toLowerCase().includes(lowerTerm);
+      const descMatch = item.description?.toLowerCase().includes(lowerTerm) || 
+                        item.tagDescription?.toLowerCase().includes(lowerTerm);
+      
+      if (!(titleMatch || descMatch)) {
+        return false;
+      }
+    }
     
-    const lowerTerm = searchTerm.toLowerCase();
-    const titleMatch = item.title?.toLowerCase().includes(lowerTerm);
-    const descMatch = item.description?.toLowerCase().includes(lowerTerm) || 
-                      item.tagDescription?.toLowerCase().includes(lowerTerm);
+    // Subject filter
+    if (selectedSubject !== "All Subjects") {
+      const itemSubject = item.subject || item.courseName || "";
+      const itemCourseCode = item.courseCode || "";
+      return itemSubject === selectedSubject || itemCourseCode === selectedSubject;
+    }
     
-    return titleMatch || descMatch;
+    return true;
   });
-
 
   // Stats (Using filteredMaterials.length so stats update when you search)
   const stats = [
@@ -123,7 +130,6 @@ export default function Materials() {
     });
   };
 
-  // Handle Delete Action
   // Handle Delete Action
 const handleDelete = async (e, itemId) => {
 e.stopPropagation(); 
@@ -293,8 +299,6 @@ console.error("Error deleting material from server:", err);
           <div className="materials-toolbar">
             <div className="search-bar-material">
               <Search size={18} className="search-icon" />
-              
-              {/* 3. CONNECT INPUT TO STATE */}
               <input 
                 type="text" 
                 placeholder="Search materials..." 
@@ -304,11 +308,22 @@ console.error("Error deleting material from server:", err);
             
             </div>
             <div className="toolbar-right">
-              <select className="subject-select">
+              <select 
+                className="subject-select"
+                value={selectedSubject}
+                onChange={(e) => setSelectedSubject(e.target.value)}
+              >
                 <option>All Subjects</option>
-                <option>Math</option>
-                <option>Science</option>
-                <option>History</option>
+                <option>Appdev</option>
+                <option>TeckNo</option>
+                <option>Networking1</option>
+                <option>Networking2</option>
+                <option>IM1</option>
+                <option>IM2</option>
+                <option>OOP1</option>
+                <option>OOP2</option>
+                <option>Electives</option>
+                <option>Project Management</option>
               </select>
               <button className="my-notes-btn">My Notes</button>
             </div>
@@ -316,7 +331,6 @@ console.error("Error deleting material from server:", err);
 
           {/* Materials Grid */}
           <div className="materials-grid">
-            {/* 4. USE filteredMaterials INSTEAD OF materials */}
             {filteredMaterials.length > 0 ? (
               filteredMaterials.map((item) => (
                 <div key={item.id} className="material-card" style={{ position: 'relative' }}>
@@ -378,7 +392,7 @@ console.error("Error deleting material from server:", err);
                     </div>
                     <div className="card-buttons">
                       <button className="preview-btn" onClick={() => handlePreview(item)}>
-                        Preview
+                        View
                       </button>
                       
                       <button className="download-action-btn" onClick={() => handleBookmark(item)}>
@@ -395,8 +409,8 @@ console.error("Error deleting material from server:", err);
               ))
             ) : (
               <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: "40px", color: "#64748b" }}>
-                {searchTerm ? (
-                  <p>No materials found matching "{searchTerm}".</p>
+                {searchTerm || selectedSubject !== "All Subjects" ? (
+                  <p>{selectedSubject !== "All Subjects" ? `No Matching File for "${selectedSubject}"` : `No materials found matching "${searchTerm}".`}</p>
                 ) : (
                   <p>No recent uploads yet.</p>
                 )}

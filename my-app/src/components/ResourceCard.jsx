@@ -286,7 +286,7 @@ export default function ResourceCard({ data, currentUserId }) {
                 onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
               >
                 <Eye size={16} />
-                Preview
+                View
               </button>
             </div>
           )}
