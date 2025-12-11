@@ -3,12 +3,15 @@ import { Link } from "react-router-dom";
 import "../styles/dashboard.css";
 import "../styles/profileSettings.css";
 
+// 1. ADDED: Import Sidebar
+import Sidebar from "../components/Sidebar";
+
 import {
   Search,
   Upload,
   Bell,
   User,
-  Menu,
+  Menu, // <-- Kept Menu for the toggle button
   FileText,
   Bookmark,
   Edit3,
@@ -27,6 +30,10 @@ export default function ProfileSettings() {
   const [isEditing, setIsEditing] = useState(false);
   const [studyPreferences, setStudyPreferences] = useState("");
   const [currentUserId, setCurrentUserId] = useState(null);
+  
+  // 2. ADDED: State to manage sidebar visibility
+  const [isSidebarOpen, setSidebarOpen] = useState(false); 
+
 
   // Load saved data on mount
   useEffect(() => {
@@ -161,35 +168,26 @@ export default function ProfileSettings() {
 
   return (
     <div className="dashboard-container">
-      {/* SIDEBAR */}
-      <aside className="sidebar">
-        <div className="logo-section">
-          <div className="logo-icon">📚</div>
-          <div className="logo-text">
-            <h1>TekNotes</h1>
-            <p>Academic Resources</p>
-          </div>
-        </div>
-
-        <nav className="nav-section">
-          <h3 className="nav-title">Navigation</h3>
-          <Link to="/dashboard" className="nav-item">🏠 Dashboard</Link>
-          <Link to="/materials" className="nav-item"><FileText size={18} /> My Materials</Link>
-          <Link to="/downloads" className="nav-item"><Bookmark size={18} /> Downloads</Link>
-          <Link to="/bookmarks" className="nav-item"><Bookmark size={18} /> Bookmarks</Link>
-        </nav>
-
-        <div className="sidebar-footer">
-          <Link to="/settings" className="settings-link active">⚙️ Settings</Link>
-        </div>
-      </aside>
+      {/* 3. Replaced static sidebar with component */}
+      <Sidebar isOpen={isSidebarOpen} />
+      {/* // DELETED:
+      // <aside className="sidebar">
+      //   ... all static sidebar code ...
+      // </aside>
+      */}
 
       {/* MAIN CONTENT */}
       <main className="main-content">
         {/* HEADER */}
         <header className="header">
           <div className="header-left">
-            <button className="menu-btn"><Menu size={24} /></button>
+            {/* 4. MODIFIED: Added onClick to toggle the Sidebar */}
+            <button 
+              className="menu-btn"
+              onClick={() => setSidebarOpen(!isSidebarOpen)}
+            >
+              <Menu size={24} />
+            </button>
             <div className="search-bar">
               <Search size={20} />
               <input type="text" placeholder="Search notes, subjects, teachers..." />
@@ -197,7 +195,13 @@ export default function ProfileSettings() {
           </div>
 
           <div className="header-right">
-            <button className="upload-btn"><Upload size={18} /> Upload</button>
+            {/* MODIFIED: Added onClick using navigate */}
+            <button 
+                className="upload-btn"
+                onClick={() => navigate("/uploads")}
+            >
+              <Upload size={18} /> Upload
+            </button>
             <button className="icon-btn"><Bell size={20} /></button>
             <button className="icon-btn"><User size={20} /></button>
           </div>
