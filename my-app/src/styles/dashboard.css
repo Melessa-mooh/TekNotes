@@ -39,8 +39,8 @@
   width: 55px;
   height: 55px;
   object-fit: cover;
-  border-radius: 50%;     /* Makes it a circle */
-  border: 2px solid #e29219; /* Gold border to match mascot */
+  border-radius: 50%;   
+  border: 2px solid #e29219; 
   background: white;
 }
 
