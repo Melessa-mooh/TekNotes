@@ -1,73 +1,33 @@
-import React from "react";
+import React, { useState } from "react";
 import "../styles/dashboard.css"; 
 import "../styles/settings.css"; 
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom"; // Added useNavigate (for future use)
+
+import Sidebar from "../components/Sidebar"; // <-- Reusable Sidebar component imported
 
 import {
   Search,
   Upload,
   Bell,
   User,
-  Menu,
+  Menu, // <-- Needed for the toggle button in the header
   FileText,
   MessageCircle,
-  //Users,
   Bookmark,
   Download 
 } from "lucide-react";
 
 export default function Settings() {
+  // State to manage the open/close status of the sidebar
+  const [isSidebarOpen, setSidebarOpen] = useState(false); 
+  const navigate = useNavigate(); // Added for consistency with other pages (e.g., for Upload button)
+
   return (
     <div className="dashboard-container">
-
-      {/* Sidebar */}
-      <aside className="sidebar">
-        <div className="logo-section">
-          <div className="logo-icon">📚</div>
-          <div className="logo-text">
-            <h1>TekNotes</h1>
-            <p>Academic Resources</p>
-          </div>
-        </div>
-
-        <nav className="nav-section">
-          <h3 className="nav-title">Navigation</h3>
-
-          <Link to="/dashboard" className="nav-item">
-            <span className="nav-icon">🏠</span>
-            Dashboard
-          </Link>
-
-          <Link to="/materials" className="nav-item">
-            <FileText size={18} />
-            My Materials
-          </Link>
-
-          <Link to="/reviews" className="nav-item">
-            <MessageCircle size={18} />
-            Reviews
-          </Link>
-          <Link to="/downloads" className="nav-item"> 
-             <Download size={18} /> 
-             Downloads
-            </Link>
-
-          
-
-          <Link to="/bookmarks" className="nav-item">
-            <Bookmark size={18} />
-            Bookmarks
-          </Link>
-
-         
-        </nav>
-
-        <div className="sidebar-footer">
-          <Link to="/settings" className="settings-link active">
-            ⚙️ Settings
-          </Link>
-        </div>
-      </aside>
+      
+      {/* 1. Sidebar Component */}
+      {/* It uses the isSidebarOpen state to control its appearance */}
+      <Sidebar isOpen={isSidebarOpen} /> 
 
       {/* Main Content */}
       <main className="main-content">
@@ -75,7 +35,11 @@ export default function Settings() {
         {/* Header */}
         <header className="header">
           <div className="header-left">
-            <button className="menu-btn">
+            {/* 2. Menu Button to Toggle Sidebar */}
+            <button 
+              className="menu-btn"
+              onClick={() => setSidebarOpen(!isSidebarOpen)} // <-- Toggles the sidebar state
+            >
               <Menu size={24} />
             </button>
             <div className="search-bar">
@@ -85,7 +49,11 @@ export default function Settings() {
           </div>
 
           <div className="header-right">
-            <button className="upload-btn">
+            {/* Example: Using useNavigate for the Upload button */}
+            <button 
+                className="upload-btn"
+                onClick={() => navigate("/uploads")}
+            >
               <Upload size={18} />
               Upload
             </button>
