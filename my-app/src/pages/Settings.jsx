@@ -1,16 +1,14 @@
 import React, { useState } from "react";
 import "../styles/dashboard.css"; 
 import "../styles/settings.css"; 
-import { Link, useNavigate } from "react-router-dom"; // Added useNavigate (for future use)
+import { Link, useNavigate } from "react-router-dom"; 
 
-import Sidebar from "../components/Sidebar"; // <-- Reusable Sidebar component imported
+import Sidebar from "../components/Sidebar"; 
 
 import {
   Search,
   Upload,
-  Bell,
-  User,
-  Menu, // <-- Needed for the toggle button in the header
+  Menu, 
   FileText,
   MessageCircle,
   Bookmark,
@@ -18,24 +16,19 @@ import {
 } from "lucide-react";
 
 export default function Settings() {
-  // State to manage the open/close status of the sidebar
   const [isSidebarOpen, setSidebarOpen] = useState(false); 
-  const navigate = useNavigate(); // Added for consistency with other pages (e.g., for Upload button)
+  const navigate = useNavigate(); 
 
   return (
     <div className="dashboard-container">
       
-      {/* 1. Sidebar Component */}
-      {/* It uses the isSidebarOpen state to control its appearance */}
       <Sidebar isOpen={isSidebarOpen} /> 
 
-      {/* Main Content */}
       <main className="main-content">
 
-        {/* Header */}
         <header className="header">
           <div className="header-left">
-            {/* 2. Menu Button to Toggle Sidebar */}
+          
             <button 
               className="menu-btn"
               onClick={() => setSidebarOpen(!isSidebarOpen)} // <-- Toggles the sidebar state
@@ -49,19 +42,13 @@ export default function Settings() {
           </div>
 
           <div className="header-right">
-            {/* Example: Using useNavigate for the Upload button */}
+           
             <button 
                 className="upload-btn"
                 onClick={() => navigate("/uploads")}
             >
               <Upload size={18} />
               Upload
-            </button>
-            <button className="icon-btn">
-              <Bell size={20} />
-            </button>
-            <button className="icon-btn">
-              <User size={20} />
             </button>
           </div>
         </header>

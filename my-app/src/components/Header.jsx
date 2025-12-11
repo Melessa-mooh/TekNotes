@@ -1,6 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Upload, Bell, User, Menu } from "lucide-react";
+import { Search, Upload, Menu } from "lucide-react";
 import "../styles/dashboard.css";
 
 export default function Header({ onMenuClick, showSearch = true }) {
@@ -26,12 +26,6 @@ export default function Header({ onMenuClick, showSearch = true }) {
       <div className="header-right">
         <button className="upload-btn" onClick={() => navigate("/uploads")}>
           <Upload size={18} /> Upload
-        </button>
-        <button className="icon-btn">
-          <Bell size={20} />
-        </button>
-        <button className="icon-btn">
-          <User size={20} />
         </button>
       </div>
     </header>
