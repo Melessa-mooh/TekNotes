@@ -3,8 +3,6 @@ import { useNavigate } from "react-router-dom";
 import {
   Search,
   Upload,
-  Bell,
-  User,
   Menu,
   Users,
   Plus,

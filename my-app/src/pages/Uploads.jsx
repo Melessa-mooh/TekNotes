@@ -2,8 +2,6 @@ import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Upload,
-  Bell,
-  User,
   Menu,
   FileText,
   CloudUpload,
@@ -170,12 +168,6 @@ export default function Uploads() {
           <div className="header-right">
             <button className="upload-btn-primary" onClick={handleUpload}>
               <Upload size={18} /> Upload
-            </button>
-            <button className="icon-btn">
-              <Bell size={20} />
-            </button>
-            <button className="icon-btn">
-              <User size={20} />
             </button>
           </div>
         </header>

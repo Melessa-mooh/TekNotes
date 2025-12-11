@@ -3,8 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { 
   Search, 
   Upload, 
-  Bell, 
-  User, 
   Menu, 
   FileText, 
   Download, 
@@ -276,8 +274,6 @@ console.error("Error deleting material from server:", err);
             <button className="upload-btn" onClick={() => navigate('/uploads')}>
                           <Upload size={18} /> Upload
                         </button>
-            <button className="icon-btn"><Bell size={20} /></button>
-            <button className="icon-btn"><User size={20} /></button>
           </div>
         </header>
 
@@ -366,7 +362,6 @@ console.error("Error deleting material from server:", err);
 
                   <div className="card-meta-row">
                     <div className="author-info">
-                      <User size={14} />
                       <span>{item.teacherName || 'Unknown'}</span>
                       <span className="dot">🗓️</span>
                       <span>{item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'N/A'}</span>

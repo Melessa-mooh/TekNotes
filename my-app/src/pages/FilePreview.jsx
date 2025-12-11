@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { 
-  Bell, 
-  User, 
   Menu, 
   ArrowLeft, 
   Download, 
@@ -118,7 +116,6 @@ export default function FilePreview() {
               <button className="icon-action"><Flag size={18} /></button>
             </div>
             <div className="user-profile-icon">
-                <User size={20} />
             </div>
           </div>
         </header>

@@ -3,8 +3,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { 
   Search, 
   Upload, 
-  Bell, 
-  User, 
   Menu
 } from "lucide-react";
 import Swal from 'sweetalert2';
@@ -12,7 +10,6 @@ import Swal from 'sweetalert2';
 import Sidebar from "../components/Sidebar";
 import SearchCard from "../components/SearchCard";
 import ReviewModal from "../components/ReviewModal"; 
-// ✅ 1. IMPORT THE NEW MODAL HERE
 import ResourceCommentsModal from "../components/ResourceCommentsModal"; 
 import ApiService from "../services/api"; 
 
@@ -22,7 +19,7 @@ import "../styles/search.css";
 export default function SearchResources() {
   const [isSidebarOpen, setSidebarOpen] = useState(false);
   
-  // Navigation Hooks
+  
   const location = useLocation();
   const navigate = useNavigate();
   
@@ -30,11 +27,11 @@ export default function SearchResources() {
   const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [activeCategory, setActiveCategory] = useState("All");
   
-  // Modal State
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedResource, setSelectedResource] = useState(null);
 
-  // ✅ 2. NEW STATE FOR COMMENTS MODAL
+  
   const [selectedResourceForComments, setSelectedResourceForComments] = useState(null);
 
   // Data State
@@ -320,8 +317,6 @@ export default function SearchResources() {
             <button className="upload-btn" onClick={() => navigate('/uploads')}>
                 <Upload size={18} /> Upload
             </button>
-            <button className="icon-btn"><Bell size={20} /></button>
-            <button className="icon-btn"><User size={20} /></button>
           </div>
         </header>
 

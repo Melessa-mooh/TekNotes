@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Menu, FileText, Star, BookOpen, Clock, Upload, Bell, User, Search } from "lucide-react"; 
+import { Menu, FileText, Star, BookOpen, Clock, Upload, Search } from "lucide-react"; 
 import Swal from 'sweetalert2';
 
 // Components
@@ -98,7 +98,7 @@ export default function Bookmarks() {
             <button className="upload-btn" onClick={() => navigate('/uploads')}>
               <Upload size={18} /> Upload
             </button>
-            {/* Removed Bell and User icons as per previous request */}
+        
           </div>
         </header>
 

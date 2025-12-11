@@ -8,8 +8,6 @@ import Sidebar from "../components/Sidebar";
 import {
   Search,
   Upload,
-  Bell,
-  User,
   Menu,
   FileText,
   Bookmark,
@@ -133,8 +131,6 @@ export default function AccountSettings() {
             >
                 <Upload size={18} /> Upload
             </button>
-            <button className="icon-btn"><Bell size={20} /></button>
-            <button className="icon-btn"><User size={20} /></button>
           </div>
         </header>
 

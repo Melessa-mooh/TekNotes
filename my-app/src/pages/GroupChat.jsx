@@ -3,8 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   Menu,
   Upload,
-  Bell,
-  User,
   Send,
   Paperclip,
   Download,

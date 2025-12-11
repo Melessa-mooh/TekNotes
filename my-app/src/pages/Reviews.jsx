@@ -2,9 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   Search, 
-  Upload, 
-  Bell, 
-  User, 
+  Upload,  
   Menu, 
   MessageCircle, 
   ThumbsUp, 
@@ -245,8 +243,6 @@ const updatedReviews = reviews.filter((r) => (r.id !== id && r.reviewId !== id))
             <button className="upload-btn" onClick={() => navigate('/uploads')}>
               <Upload size={18} /> Upload
             </button>
-            <button className="icon-btn"><Bell size={20} /></button>
-            <button className="icon-btn"><User size={20} /></button>
           </div>
         </header>
 
