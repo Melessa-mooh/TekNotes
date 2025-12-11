@@ -77,6 +77,7 @@ export default function Reviews() {
     loadReviews();
   }, [navigate]);
 
+  // --- HANDLE LIKE FUNCTION ---
   const handleLike = async (reviewId) => {
     if (!currentUserId) {
       Swal.fire({
@@ -88,8 +89,10 @@ export default function Reviews() {
     }
 
     try {
-      const result = await ApiService.toggleReviewLike(reviewId, currentUserId);
-      // Reload reviews to get updated like counts
+      // 1. Call API to toggle like
+      await ApiService.toggleReviewLike(reviewId, currentUserId);
+      
+      // 2. Reload reviews to get the updated like count automatically
       const allReviews = await ApiService.getAllReviews(currentUserId);
       setReviews(allReviews);
     } catch (err) {
@@ -122,7 +125,7 @@ export default function Reviews() {
       try {
         await ApiService.deleteReview(id);
 
-const updatedReviews = reviews.filter((r) => (r.id !== id && r.reviewId !== id));
+        const updatedReviews = reviews.filter((r) => (r.id !== id && r.reviewId !== id));
         setReviews(updatedReviews);
         
         Swal.fire({
@@ -204,11 +207,13 @@ const updatedReviews = reviews.filter((r) => (r.id !== id && r.reviewId !== id))
   });
 
   const totalReviews = filteredReviews.length;
-  const totalLikes = filteredReviews.reduce((sum, item) => sum + (item.likes || 0), 0);
+  // Calculate total likes from the filtered list
+  const totalLikes = filteredReviews.reduce((sum, item) => sum + (item.likeCount || item.likes || 0), 0);
   const avgRating = totalReviews > 0 
     ? (filteredReviews.reduce((sum, item) => sum + item.rating, 0) / totalReviews).toFixed(1) 
     : 0;
 
+  // Stats Array with Likes included
   const stats = [
     { label: "Reviews Written", count: totalReviews, icon: MessageCircle, color: "red" },
     { label: "Avg Rating", count: avgRating, icon: Star, color: "yellow" },
@@ -334,15 +339,13 @@ const updatedReviews = reviews.filter((r) => (r.id !== id && r.reviewId !== id))
           <div className="reviews-list">
             {filteredReviews.length > 0 ? (
               filteredReviews.map((review) => (
-               
+                
                 <div key={review.reviewId || review.id} className="review-card">
                   
                   <div className="review-card-header">
                     <div className="header-content">
-                      {/* FIX 1: Access the nested resource title */}
                       <h4>{review.resourceTitle || (review.resource ? review.resource.title : "Resource Review")}</h4>
                       
-                      {/* Show reviewer name - "You" if it's current user */}
                       <p style={{ fontSize: '12px', color: '#64748b', marginTop: '4px' }}>
                         Reviewed by {currentUserId && review.userId === currentUserId ? "You" : (review.userName || "Unknown")}
                       </p>
@@ -361,19 +364,19 @@ const updatedReviews = reviews.filter((r) => (r.id !== id && r.reviewId !== id))
                     {renderStars(review.rating)}
                   </div>
 
-                  {/* FIX 2: Use 'comment' instead of 'content' */}
                   <p className="review-text">{review.comment}</p>
 
                   <div className="review-footer">
+                    {/* LIKE BUTTON */}
                     <button 
                       className="engagement-item" 
                       onClick={() => handleLike(review.reviewId || review.id)}
                       style={{ 
                         background: 'transparent', 
                         border: 'none', 
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
+                        cursor: 'pointer', 
+                        display: 'flex', 
+                        alignItems: 'center', 
                         gap: '6px',
                         color: review.isLiked ? '#5C0000' : 'inherit'
                       }}
@@ -382,15 +385,16 @@ const updatedReviews = reviews.filter((r) => (r.id !== id && r.reviewId !== id))
                       <ThumbsUp size={18} fill={review.isLiked ? '#5C0000' : 'none'} />
                       <span>{review.likeCount || review.likes || 0}</span>
                     </button>
+
                     <button 
                       className="engagement-item"
                       onClick={() => handleComments(review.reviewId || review.id)}
                       style={{ 
                         background: 'transparent', 
                         border: 'none', 
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
+                        cursor: 'pointer', 
+                        display: 'flex', 
+                        alignItems: 'center', 
                         gap: '6px'
                       }}
                       title="View comments"
