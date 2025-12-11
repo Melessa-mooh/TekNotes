@@ -391,14 +391,28 @@ console.error("Error deleting material from server:", err);
                       <span>Uploaded by {item.uploadedBy}</span>
                     </div>
                     <div className="card-buttons">
-                      <button className="preview-btn" onClick={() => handlePreview(item)}>
+                      <button className="preview-btn" onClick={() => {
+                        if (item.fileUrl) {
+                          // Construct full URL if it's a relative path
+                          const fileUrl = item.fileUrl.startsWith('http') 
+                            ? item.fileUrl 
+                            : `http://localhost:8080${item.fileUrl}`;
+                          window.open(fileUrl, '_blank');
+                        } else {
+                          Swal.fire({
+                            icon: 'warning',
+                            title: 'File Not Available',
+                            text: 'The file URL is not available for this resource.'
+                          });
+                        }
+                      }}>
                         View
                       </button>
-                      
+                    
                       <button className="download-action-btn" onClick={() => handleBookmark(item)}>
                         <Bookmark size={14} /> Save
                       </button>
-                      
+                    
                       <button className="download-action-btn" onClick={() => handleDownload(item)}>
                         <Download size={14} /> Download
                       </button>

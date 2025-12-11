@@ -557,9 +557,25 @@ export default function GroupChat() {
                     >
                       by {file.uploadedByName}
                     </div>
-                    <div style={{ display: "flex", gap: "6px" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: "6px",
+                        marginTop: "8px",
+                      }}
+                    >
                       <button
-                        onClick={() => window.open(`http://localhost:8080${file.fileUrl}`, "_blank")}
+                        onClick={() => {
+                          if (file.fileUrl) {
+                            window.open(`http://localhost:8080${file.fileUrl}`, "_blank");
+                          } else {
+                            Swal.fire({
+                              icon: 'warning',
+                              title: 'File Not Available',
+                              text: 'The file URL is not available for this resource.'
+                            });
+                          }
+                        }}
                         style={{
                           flex: 1,
                           padding: "6px",
@@ -577,6 +593,7 @@ export default function GroupChat() {
                       >
                         Open
                       </button>
+                      
                       <button
                         onClick={() => handleDownloadFile(file)}
                         style={{

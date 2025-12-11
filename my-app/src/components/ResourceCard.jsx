@@ -246,7 +246,22 @@ export default function ResourceCard({ data, currentUserId }) {
               overflow: 'hidden'
             }}>
               <button
-                onClick={handleOpen}
+                onClick={() => {
+                  if (data.fileUrl) {
+                    // Construct full URL if it's a relative path
+                    const fileUrl = data.fileUrl.startsWith('http') 
+                      ? data.fileUrl 
+                      : `http://localhost:8080${data.fileUrl}`;
+                    window.open(fileUrl, '_blank');
+                  } else {
+                    Swal.fire({
+                      icon: 'warning',
+                      title: 'File Not Available',
+                      text: 'The file URL is not available for this resource.'
+                    });
+                  }
+                  setShowMenu(false);
+                }}
                 style={{
                   width: '100%',
                   padding: '12px 16px',
@@ -259,28 +274,6 @@ export default function ResourceCard({ data, currentUserId }) {
                   gap: '8px',
                   fontSize: '14px',
                   color: '#0f172a'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.background = '#f8fafc'}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'white'}
-              >
-                <File size={16} />
-                Open
-              </button>
-              <button
-                onClick={handlePreview}
-                style={{
-                  width: '100%',
-                  padding: '12px 16px',
-                  border: 'none',
-                  background: 'white',
-                  textAlign: 'left',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  fontSize: '14px',
-                  color: '#0f172a',
-                  borderTop: '1px solid #e2e8f0'
                 }}
                 onMouseEnter={(e) => e.currentTarget.style.background = '#f8fafc'}
                 onMouseLeave={(e) => e.currentTarget.style.background = 'white'}

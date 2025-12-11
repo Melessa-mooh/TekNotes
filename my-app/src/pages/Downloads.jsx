@@ -324,35 +324,24 @@ export default function Downloads() {
                       )}
                     </div>
                     <div className="card-buttons">
-                      <button 
-                        className="preview-btn" 
-                        onClick={() => {
-                          const description = item.description || item.tagDescription || 'No description available.';
+                      <button className="preview-btn" onClick={() => {
+                        if (item.fileUrl) {
+                          // Construct full URL if it's a relative path
+                          const fileUrl = item.fileUrl.startsWith('http') 
+                            ? item.fileUrl 
+                            : `http://localhost:8080${item.fileUrl}`;
+                          window.open(fileUrl, '_blank');
+                        } else {
                           Swal.fire({
-                            title: item.title,
-                            html: `
-                              <div style="text-align: left; padding: 10px;">
-                                <p><strong>Subject:</strong> ${item.subject || item.courseName || 'N/A'}</p>
-                                <p><strong>Professor:</strong> ${item.professor || item.teacherName || 'N/A'}</p>
-                                <p><strong>File Type:</strong> ${item.fileType || 'N/A'}</p>
-                                <p><strong>Description:</strong></p>
-                                <p style="margin-top: 10px; padding: 10px; background: #f8fafc; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word;">
-                                  ${description}
-                                </p>
-                                <p style="margin-top: 10px;"><strong>Rating:</strong> ${item.rating || 0} (${item.reviews || item.reviewCount || 0} reviews)</p>
-                                <p><strong>Downloads:</strong> ${item.downloads || item.downloadCount || 0}</p>
-                                <p style="margin-top: 10px; font-size: 12px; color: #64748b;"><strong>Uploaded by:</strong> ${item.uploadedBy || item.uploaderName || 'Unknown'}</p>
-                              </div>
-                            `,
-                            width: '600px',
-                            showCloseButton: true,
-                            showConfirmButton: true,
-                            confirmButtonText: 'Close'
+                            icon: 'warning',
+                            title: 'File Not Available',
+                            text: 'The file URL is not available for this resource.'
                           });
-                        }}
-                      >
+                        }
+                      }}>
                         View
                       </button>
+                    
                       <button className="download-action-btn">
                         <Download size={14} /> Downloaded
                       </button>

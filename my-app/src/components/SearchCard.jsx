@@ -155,7 +155,21 @@ export default function SearchCard({ data, onRate, onDownload, onPreview, onComm
             {isBookmarked ? 'Saved' : 'Save'}
           </button>
           
-          <button className="btn-preview" onClick={() => onPreview(data)}>
+          <button className="btn-preview" onClick={() => {
+            if (data.fileUrl) {
+              // Construct full URL if it's a relative path
+              const fileUrl = data.fileUrl.startsWith('http') 
+                ? data.fileUrl 
+                : `http://localhost:8080${data.fileUrl}`;
+              window.open(fileUrl, '_blank');
+            } else {
+              Swal.fire({
+                icon: 'warning',
+                title: 'File Not Available',
+                text: 'The file URL is not available for this resource.'
+              });
+            }
+          }}>
             View
           </button>
           
