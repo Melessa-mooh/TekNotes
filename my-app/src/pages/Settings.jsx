@@ -8,8 +8,6 @@ import Sidebar from "../components/Sidebar";
 import {
   Upload,
   Menu, 
-  Bell,
-  User
 } from "lucide-react";
 
 export default function Settings() {
@@ -47,8 +45,6 @@ export default function Settings() {
             >
               <Upload size={18} /> Upload
             </button>
-            <button className="icon-btn"><Bell size={20} /></button>
-            <button className="icon-btn"><User size={20} /></button>
           </div>
         </header>
 

@@ -9,8 +9,6 @@ import Sidebar from "../components/Sidebar";
 import {
   Search,
   Upload,
-  Bell,
-  User,
   Menu, // <-- Kept Menu for the toggle button
   FileText,
   Bookmark,
@@ -202,7 +200,6 @@ export default function ProfileSettings() {
             >
               <Upload size={18} /> Upload
             </button>
-            <button className="icon-btn"><User size={20} /></button>
           </div>
         </header>
 
