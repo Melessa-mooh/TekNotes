@@ -273,17 +273,28 @@ export default function StudyGroups() {
     <div className="dashboard-container">
       <Sidebar isOpen={isSidebarOpen} />
       <main className="main-content">
-        <Header onMenuClick={() => setSidebarOpen(!isSidebarOpen)} showSearch={false} />
-        <div style={{ padding: "20px 20px 0 20px" }}>
-          <div className="page-header-text" style={{ marginBottom: "20px" }}>
-            <h1>Study Groups</h1>
-            <p>Join verified study groups and collaborate</p>
+        
+        
+        <header className="header">
+          <div className="header-left">
+            <button className="menu-btn" onClick={() => setSidebarOpen(!isSidebarOpen)}>
+              <Menu size={24} />
+            </button>
+            <div className="page-header-text" style={{ marginLeft: "10px" }}>
+              <h1 style={{ fontSize: "24px", fontWeight: "700", margin: 0, color: "#1e293b" }}>Study Groups</h1>
+              <p style={{ margin: 0, color: "#64748b", fontSize: "14px" }}>Join verified study groups and collaborate</p>
+            </div>
           </div>
-        </div>
+          <div className="header-right">
+            <button className="upload-btn" onClick={() => navigate('/uploads')}>
+              <Upload size={18} /> Upload
+            </button>
+          </div>
+        </header>
 
         <div style={{ padding: "0 20px 20px 20px" }}>
           {/* Search and Filters */}
-          <div style={{ marginBottom: "20px" }}>
+          <div style={{ marginBottom: "20px", marginTop: "20px" }}>
             {/* Search Bar */}
             <div style={{ display: "flex", gap: "15px", marginBottom: "15px", alignItems: "center" }}>
               <div style={{ flex: 1, position: "relative" }}>

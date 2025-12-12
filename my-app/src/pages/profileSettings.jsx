@@ -9,6 +9,8 @@ import Sidebar from "../components/Sidebar";
 import {
   Search,
   Upload,
+  Bell,
+  User,
   Menu, // <-- Kept Menu for the toggle button
   FileText,
   Bookmark,
@@ -176,38 +178,37 @@ export default function ProfileSettings() {
 
       {/* MAIN CONTENT */}
       <main className="main-content">
-        {/* HEADER */}
+     {/* --- HEADER --- */}
         <header className="header">
           <div className="header-left">
-            {/* 4. MODIFIED: Added onClick to toggle the Sidebar */}
             <button 
               className="menu-btn"
               onClick={() => setSidebarOpen(!isSidebarOpen)}
             >
               <Menu size={24} />
             </button>
-            <div className="search-bar">
-              <Search size={20} />
-              <input type="text" placeholder="Search notes, subjects, teachers..." />
+            
+            {/* Title & Description moved INSIDE Header Left */}
+            <div className="page-header-text" style={{ marginLeft: "15px" }}>
+               <h1 style={{ fontSize: "24px", fontWeight: "700", margin: 0, color: "#1e293b" }}>Profile Settings</h1>
+               <p style={{ margin: 0, color: "#64748b", fontSize: "14px" }}>Manage your profile and track your learning journey</p>
             </div>
           </div>
 
           <div className="header-right">
-            {/* MODIFIED: Added onClick using navigate */}
             <button 
                 className="upload-btn"
                 onClick={() => navigate("/uploads")}
             >
               <Upload size={18} /> Upload
             </button>
+            <button className="icon-btn"><User size={20} /></button>
           </div>
         </header>
 
         {/* PAGE CONTENT */}
-        <div className="profile-settings-container">
-          <h2 className="settings-title">Settings</h2>
+        <div className="profile-settings-container"> 
           <p className="settings-subtitle">
-            Manage your profile and track your learning journey
           </p>
 
           {/* Profile Header */}

@@ -200,13 +200,12 @@ export default function Downloads() {
       <Sidebar isOpen={isSidebarOpen} />
 
       <main className="main-content">
-        <header className="header">
-          <div className="header-left">
-            <button className="menu-btn" onClick={() => setSidebarOpen(!isSidebarOpen)}>
-              <Menu size={24} />
-            </button>
-            <h1 className="page-title">Downloads</h1>
-          </div>
+       <header className="header">
+          {/* Title & Description moved INSIDE Header Left */}
+            <div className="page-header-text" style={{ marginLeft: "15px" }}>
+               <h1 style={{ fontSize: "24px", fontWeight: "700", margin: 0, color: "#1e293b" }}>Downloads</h1>
+               <p style={{ margin: 0, color: "#64748b", fontSize: "14px" }}>Access and manage your downloaded learning resources</p>
+            </div>
           <div className="header-right">
             <button className="upload-btn" onClick={() => navigate('/uploads')}>
               <Upload size={18} /> Upload
