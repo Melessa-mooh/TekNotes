@@ -6,13 +6,10 @@ import { Link, useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar"; 
 
 import {
-  Search,
   Upload,
   Menu, 
-  FileText,
-  MessageCircle,
-  Bookmark,
-  Download 
+  Bell,
+  User
 } from "lucide-react";
 
 export default function Settings() {
@@ -26,39 +23,39 @@ export default function Settings() {
 
       <main className="main-content">
 
+        {/* --- HEADER WITH TITLE INSIDE --- */}
         <header className="header">
           <div className="header-left">
-          
             <button 
               className="menu-btn"
-              onClick={() => setSidebarOpen(!isSidebarOpen)} // <-- Toggles the sidebar state
+              onClick={() => setSidebarOpen(!isSidebarOpen)} 
             >
               <Menu size={24} />
             </button>
-            <div className="search-bar">
-              <Search size={20} />
-              <input type="text" placeholder="Search notes, subjects, teachers..." />
+            
+            {/* Title moved here */}
+            <div className="page-header-text" style={{ marginLeft: "10px" }}>
+               <h1 style={{ fontSize: "24px", fontWeight: "700", margin: 0, color: "#1e293b" }}>Settings</h1>
+               <p style={{ margin: 0, color: "#64748b", fontSize: "14px" }}>Manage your profile and track your learning journey</p>
             </div>
           </div>
 
           <div className="header-right">
-           
             <button 
                 className="upload-btn"
                 onClick={() => navigate("/uploads")}
             >
-              <Upload size={18} />
-              Upload
+              <Upload size={18} /> Upload
             </button>
+            <button className="icon-btn"><Bell size={20} /></button>
+            <button className="icon-btn"><User size={20} /></button>
           </div>
         </header>
 
         {/* Settings Page Content */}
         <div className="settings-page">
-          <h2 className="settings-title">Settings</h2>
-          <p className="settings-subtitle">
-            Manage your profile and track your learning journey
-          </p>
+          
+          {/* Removed the title/subtitle from here since it's now in the header */}
 
           {/* Profile Settings Card */}
           <Link to="/settings/profile" className="settings-card-link">
